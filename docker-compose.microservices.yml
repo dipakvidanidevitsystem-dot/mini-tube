@@ -115,6 +115,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
     profiles: ["admin-service"]
 
+  # Actually extracted (migration plan step 2) — runs by default alongside the monolith.
   notification-service:
     build:
       context: .
@@ -124,4 +125,6 @@ services:
       PORT: 5017
       JWT_SECRET: ${JWT_SECRET}
       CLIENT_URL: ${CLIENT_URL}
-    profiles: ["notification-service"]
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+    ports:
+      - "5017:5017"

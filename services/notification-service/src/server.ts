@@ -1,17 +1,21 @@
 import "dotenv/config";
+import http from "node:http";
 import express from "express";
 import cors from "cors";
+import { socketService } from "./socket.service.js";
+import internalRoutes from "./internal.routes.js";
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 
 app.get("/health", (_req, res) => res.json({ status: "ok", service: "notification-service" }));
+app.use("/internal", internalRoutes);
 
-// TODO: mount routes extracted from server/src/routes/* for this service's domain
-// per the migration plan (services/notification-service owns its own tables + Drizzle schema).
+const httpServer = http.createServer(app);
+socketService.init(httpServer);
 
 const PORT = process.env.PORT || 5017;
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`notification-service listening on port ${PORT}`);
 });
