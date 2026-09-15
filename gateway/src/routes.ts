@@ -17,12 +17,15 @@ const routeTable: Record<string, string | undefined> = {
 };
 
 export function registerRoutes(app: Express) {
+  // Mounted at root (not app.use(prefix, ...)) so Express doesn't strip the
+  // prefix from req.url before the proxy sees it — pathFilter matches on the
+  // full original path instead, and the target gets the unmodified path.
   for (const [prefix, serviceUrl] of Object.entries(routeTable)) {
     app.use(
-      prefix,
       createProxyMiddleware({
         target: serviceUrl || MONOLITH_URL,
         changeOrigin: true,
+        pathFilter: prefix,
       })
     );
   }

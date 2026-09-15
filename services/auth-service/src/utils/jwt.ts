@@ -4,11 +4,15 @@ const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export interface TokenPayload {
   id: number;
+  role: "user" | "admin";
+  disabled: boolean;
 }
 
-// Tokens are now issued by services/auth-service (migration plan step 3);
-// the monolith only verifies them (shared JWT_SECRET) for its remaining routes.
 class TokenService {
+  static sign(payload: TokenPayload) {
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+  }
+
   static verify(token: string): TokenPayload {
     return jwt.verify(token, JWT_SECRET) as TokenPayload;
   }

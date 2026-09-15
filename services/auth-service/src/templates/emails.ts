@@ -112,6 +112,39 @@ function layout({ preheader, heading, bodyHtml, ctaLabel, ctaUrl }: LayoutOption
 </html>`;
 }
 
+export function welcomeEmail(name: string) {
+  return {
+    subject: "Welcome to MiniTube!",
+    html: layout({
+      preheader: `${name}, your MiniTube account is ready — come find something worth watching.`,
+      heading: `Welcome aboard, ${name} 👋`,
+      bodyHtml: `
+        <p style="margin: 0 0 16px;">Thanks for joining MiniTube! Your account is all set up and ready to go.</p>
+        <p style="margin: 0;">Browse trending videos, subscribe to creators you like, or upload your own content to start building an audience.</p>
+      `,
+      ctaLabel: "Start exploring MiniTube",
+      ctaUrl: process.env.CLIENT_URL,
+    }),
+  };
+}
+
+export function forgotPasswordEmail(name: string, resetUrl: string) {
+  return {
+    subject: "Reset your MiniTube password",
+    html: layout({
+      preheader: "This password reset link expires in 1 hour.",
+      heading: "Reset your password",
+      bodyHtml: `
+        <p style="margin: 0 0 16px;">Hi ${name}, we received a request to reset the password for your MiniTube account.</p>
+        <p style="margin: 0 0 16px;">Click the button below to choose a new password. For your security, this link expires in <strong>1 hour</strong>.</p>
+        <p style="margin: 0;">If you didn't request a password reset, you can safely ignore this email — your password won't be changed.</p>
+      `,
+      ctaLabel: "Reset your password",
+      ctaUrl: resetUrl,
+    }),
+  };
+}
+
 export function passwordChangedEmail(name: string) {
   return {
     subject: "Your MiniTube password was changed",
@@ -128,77 +161,18 @@ export function passwordChangedEmail(name: string) {
   };
 }
 
-export function newSubscriberEmail(channelName: string, subscriberName: string) {
+export function loginAlertEmail(name: string) {
   return {
-    subject: "You have a new subscriber!",
+    subject: "New login to your MiniTube account",
     html: layout({
-      preheader: `${subscriberName} just subscribed to your MiniTube channel.`,
-      heading: "You have a new subscriber! 🎉",
+      preheader: "We noticed a new login to your MiniTube account.",
+      heading: "New login detected",
       bodyHtml: `
-        <p style="margin: 0 0 16px;">Hi ${channelName}, great news — <strong>${subscriberName}</strong> just subscribed to your channel.</p>
-        <p style="margin: 0;">Keep the momentum going by checking your channel stats and posting your next video.</p>
+        <p style="margin: 0 0 16px;">Hi ${name}, we noticed a new sign-in to your MiniTube account.</p>
+        <p style="margin: 0;">If this was you, no action is needed. If you don't recognize this activity, secure your account by resetting your password right away.</p>
       `,
-      ctaLabel: "View your dashboard",
-      ctaUrl: `${process.env.CLIENT_URL}/dashboard`,
+      ctaLabel: "Secure your account",
+      ctaUrl: `${process.env.CLIENT_URL}/forgot-password`,
     }),
   };
 }
-
-export function videoUploadedEmail(uploaderName: string, videoTitle: string, videoUrl: string) {
-  return {
-    subject: "Your video is live",
-    html: layout({
-      preheader: `"${videoTitle}" is now live on MiniTube.`,
-      heading: "Your video is live 🚀",
-      bodyHtml: `
-        <p style="margin: 0 0 16px;">Hi ${uploaderName}, your video "<strong>${videoTitle}</strong>" has uploaded successfully and is now visible to viewers.</p>
-        <p style="margin: 0;">Take a look to make sure everything looks right, then share it with your audience.</p>
-      `,
-      ctaLabel: "Watch your video",
-      ctaUrl: videoUrl,
-    }),
-  };
-}
-
-export function commentEmail(
-  ownerName: string,
-  commenterName: string,
-  videoTitle: string,
-  videoUrl: string
-) {
-  return {
-    subject: "New comment on your video",
-    html: layout({
-      preheader: `${commenterName} commented on "${videoTitle}".`,
-      heading: "New comment on your video",
-      bodyHtml: `
-        <p style="margin: 0 0 16px;">Hi ${ownerName}, <strong>${commenterName}</strong> just commented on your video "<strong>${videoTitle}</strong>".</p>
-        <p style="margin: 0;">Jump in and reply to keep the conversation going with your viewers.</p>
-      `,
-      ctaLabel: "View the comment",
-      ctaUrl: videoUrl,
-    }),
-  };
-}
-
-export function likeEmail(
-  ownerName: string,
-  likerName: string,
-  videoTitle: string,
-  videoUrl: string
-) {
-  return {
-    subject: "Someone liked your video",
-    html: layout({
-      preheader: `${likerName} liked "${videoTitle}".`,
-      heading: "Someone liked your video 👍",
-      bodyHtml: `
-        <p style="margin: 0 0 16px;">Hi ${ownerName}, <strong>${likerName}</strong> just liked your video "<strong>${videoTitle}</strong>".</p>
-        <p style="margin: 0;">Nice work — keep creating content your audience loves.</p>
-      `,
-      ctaLabel: "View your video",
-      ctaUrl: videoUrl,
-    }),
-  };
-}
-

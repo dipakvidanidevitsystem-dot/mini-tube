@@ -1,7 +1,9 @@
-# Local dev stack for the microservices skeleton (Step 1 of the migration plan).
+# Local dev stack for the microservices migration (see the plan for step numbers).
 # Runs alongside docker-compose.yml (the still-live monolith) — the gateway
 # defaults every route to MONOLITH_URL until a given service is actually
-# extracted and given its own *_SERVICE_URL.
+# extracted and given its own *_SERVICE_URL. auth-service and
+# notification-service are real extractions already; the rest are stubs
+# gated behind Compose profiles until they're extracted for real.
 #
 # Usage: docker compose -f docker-compose.yml -f docker-compose.microservices.yml up
 
@@ -16,7 +18,7 @@ services:
       CLIENT_URL: ${CLIENT_URL}
       JWT_SECRET: ${JWT_SECRET}
       MONOLITH_URL: http://server:${PORT}
-      AUTH_SERVICE_URL:
+      AUTH_SERVICE_URL: http://auth-service:5011
       USER_SERVICE_URL:
       VIDEO_SERVICE_URL:
       COMMENT_SERVICE_URL:
@@ -27,6 +29,9 @@ services:
     ports:
       - "5000:5000"
 
+  # Actually extracted (migration plan step 3) — runs by default alongside the monolith.
+  # Still points at the same shared MySQL instance/tables as the monolith; the
+  # "database per service" split is a later step once User Service is also extracted.
   auth-service:
     build:
       context: .
@@ -34,13 +39,24 @@ services:
     restart: unless-stopped
     environment:
       PORT: 5011
+      CLIENT_URL: ${CLIENT_URL}
       JWT_SECRET: ${JWT_SECRET}
       DB_HOST: mysql
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
-    profiles: ["auth-service"]
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_SECURE: ${EMAIL_SECURE}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_APP_PASSWORD: ${EMAIL_APP_PASSWORD}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "5011:5011"
 
   user-service:
     build:

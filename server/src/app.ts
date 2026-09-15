@@ -1,6 +1,5 @@
 import express, { type Express } from "express";
 import cors from "cors";
-import authRoutes from "./routes/auth.routes.js";
 import videoRoutes from "./routes/video.routes.js";
 import commentRoutes from "./routes/comment.routes.js";
 import userRoutes from "./routes/user.routes.js";
@@ -26,7 +25,8 @@ class App {
   private initializeRoutes() {
     this.app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
-    this.app.use("/api/auth", authRoutes);
+    // /api/auth is now owned by services/auth-service (migration plan step 3) —
+    // the gateway routes that prefix there instead of here.
     this.app.use("/api/videos", videoRoutes);
     this.app.use("/api/comments", commentRoutes);
     this.app.use("/api/users", userRoutes);

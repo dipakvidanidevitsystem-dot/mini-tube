@@ -45,7 +45,7 @@ class AuthService {
       profileImage: profileImage || null,
     });
 
-    const token = TokenService.sign({ id: user.id });
+    const token = TokenService.sign({ id: user.id, role: user.role, disabled: user.disabled });
     this.mailerService.sendMailFireAndForget({ to: user.email, ...welcomeEmail(user.name) });
 
     return { token, user: toPublicUser(user) };
@@ -66,7 +66,7 @@ class AuthService {
       throw new HttpError(401, "Invalid email or password");
     }
 
-    const token = TokenService.sign({ id: user.id });
+    const token = TokenService.sign({ id: user.id, role: user.role, disabled: user.disabled });
     this.mailerService.sendMailFireAndForget({ to: user.email, ...loginAlertEmail(user.name) });
 
     return { token, user: toPublicUser(user) };
