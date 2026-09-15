@@ -88,7 +88,7 @@ class VideoController {
   remove = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = Number(req.params.id);
-      await this.videoService.delete(id, req.user!.id, req.user!.role);
+      await this.videoService.delete(id, req.user!.id, req.user!.role as "user" | "admin");
       res.status(204).send();
     } catch (err) {
       next(err);

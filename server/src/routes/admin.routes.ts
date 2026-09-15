@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import { requireAdminMiddleware } from "../middleware/requireAdmin.js";
-import videoController from "../controllers/video.controller.js";
 import commentController from "../controllers/comment.controller.js";
 import adminController from "../controllers/admin.controller.js";
 import migrationController from "../controllers/migration.controller.js";
@@ -20,7 +19,7 @@ class AdminRoutes {
     this.router.patch("/users/:id/disable", adminController.setUserDisabled);
 
     this.router.get("/videos", adminController.listAllVideos);
-    this.router.delete("/videos/:id", videoController.remove);
+    this.router.delete("/videos/:id", adminController.removeVideo);
 
     this.router.get("/comments", adminController.listAllComments);
     this.router.delete("/comments/:id", commentController.remove);

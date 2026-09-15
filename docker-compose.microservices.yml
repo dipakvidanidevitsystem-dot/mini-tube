@@ -1,9 +1,10 @@
 # Local dev stack for the microservices migration (see the plan for step numbers).
 # Runs alongside docker-compose.yml (the still-live monolith) — the gateway
 # defaults every route to MONOLITH_URL until a given service is actually
-# extracted and given its own *_SERVICE_URL. auth-service and
-# notification-service are real extractions already; the rest are stubs
-# gated behind Compose profiles until they're extracted for real.
+# extracted and given its own *_SERVICE_URL. auth-service,
+# notification-service, and video-service are real extractions already;
+# the rest are stubs gated behind Compose profiles until they're extracted
+# for real.
 #
 # Usage: docker compose -f docker-compose.yml -f docker-compose.microservices.yml up
 
@@ -20,12 +21,13 @@ services:
       MONOLITH_URL: http://server:${PORT}
       AUTH_SERVICE_URL: http://auth-service:5011
       USER_SERVICE_URL:
-      VIDEO_SERVICE_URL:
+      VIDEO_SERVICE_URL: http://video-service:5013
       COMMENT_SERVICE_URL:
       HISTORY_SERVICE_URL:
       ADMIN_SERVICE_URL:
     depends_on:
       - server
+      - video-service
     ports:
       - "5000:5000"
 
@@ -73,6 +75,7 @@ services:
       DB_NAME: ${DB_NAME}
     profiles: ["user-service"]
 
+  # Actually extracted (migration plan step 4) — runs by default alongside the monolith.
   video-service:
     build:
       context: .
@@ -80,6 +83,7 @@ services:
     restart: unless-stopped
     environment:
       PORT: 5013
+      CLIENT_URL: ${CLIENT_URL}
       JWT_SECRET: ${JWT_SECRET}
       DB_HOST: mysql
       DB_PORT: 3306
@@ -89,7 +93,19 @@ services:
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
-    profiles: ["video-service"]
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_SECURE: ${EMAIL_SECURE}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_APP_PASSWORD: ${EMAIL_APP_PASSWORD}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
+      NOTIFICATION_SERVICE_URL: http://notification-service:5017
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "5013:5013"
 
   comment-service:
     build:

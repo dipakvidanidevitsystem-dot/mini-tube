@@ -11,6 +11,7 @@
     "node": ">=22"
   },
   "allowScripts": {
-    "bcrypt@5.1.1": true
+    "bcrypt@5.1.1": true,
+    "ffmpeg-static@5.3.0": true
   }
 }

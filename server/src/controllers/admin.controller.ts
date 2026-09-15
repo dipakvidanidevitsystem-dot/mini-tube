@@ -1,5 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
+import axios from "axios";
 import { adminService, type AdminService } from "../services/admin.service.js";
+
+const VIDEO_SERVICE_URL = process.env.VIDEO_SERVICE_URL || "http://localhost:5013";
 
 class AdminController {
   constructor(private readonly adminService: AdminService) {}
@@ -56,6 +59,24 @@ class AdminController {
       const result = await this.adminService.markReportReviewed(id);
       res.json(result);
     } catch (err) {
+      next(err);
+    }
+  };
+
+  // Video deletion now belongs to video-service (it enforces the same
+  // owner-or-admin rule) — forward the admin's own token so that check runs
+  // there instead of duplicating it here.
+  removeVideo = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await axios.delete(`${VIDEO_SERVICE_URL}/api/videos/${req.params.id}`, {
+        headers: { Authorization: req.headers.authorization },
+      });
+      res.status(204).send();
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response) {
+        res.status(err.response.status).json(err.response.data);
+        return;
+      }
       next(err);
     }
   };
