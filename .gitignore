@@ -1,0 +1,13 @@
+# Root-level ignores. client/ and server/ have their own .gitignore for their own build artifacts.
+
+.env
+.DS_Store
+
+# local Claude Code tool settings (machine-specific, may contain local paths/tokens)
+.claude/
+
+# stray local notes
+important_reasoning.txt
+
+# graphify tool output
+graphify-out/

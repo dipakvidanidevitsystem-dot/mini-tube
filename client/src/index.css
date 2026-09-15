@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #fbf7f2; /* background token */
+  color: #0f0f23; /* foreground token */
+}
+
+.dark body {
+  background-color: #000000; /* background-dark token */
+  color: #f8fafc; /* foreground-dark token */
+}
