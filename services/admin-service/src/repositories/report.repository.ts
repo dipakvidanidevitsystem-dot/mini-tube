@@ -2,13 +2,7 @@ import { eq, desc } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { reports, videos, users } from "../db/schema.js";
 
-type NewReport = typeof reports.$inferInsert;
-
 class ReportRepository {
-  async create(data: NewReport) {
-    await db.insert(reports).values(data);
-  }
-
   async findById(id: number) {
     const [report] = await db.select().from(reports).where(eq(reports.id, id));
     return report;

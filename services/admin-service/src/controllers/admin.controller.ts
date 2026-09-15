@@ -64,7 +64,7 @@ class AdminController {
     }
   };
 
-  // Video deletion now belongs to video-service (it enforces the same
+  // Video deletion belongs to video-service (it enforces the same
   // owner-or-admin rule) — forward the admin's own token so that check runs
   // there instead of duplicating it here.
   removeVideo = async (req: Request, res: Response, next: NextFunction) => {
@@ -82,7 +82,7 @@ class AdminController {
     }
   };
 
-  // Comment deletion now belongs to comment-service, for the same reason.
+  // Comment deletion belongs to comment-service, for the same reason.
   removeComment = async (req: Request, res: Response, next: NextFunction) => {
     try {
       await axios.delete(`${COMMENT_SERVICE_URL}/api/comments/${req.params.id}`, {

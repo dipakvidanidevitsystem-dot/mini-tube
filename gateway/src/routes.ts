@@ -17,6 +17,10 @@ const routeTable: { pathFilter: string | ((path: string) => boolean); serviceUrl
     pathFilter: (path) => /^\/api\/videos\/[^/]+\/comments/.test(path),
     serviceUrl: process.env.COMMENT_SERVICE_URL,
   },
+  // Schema migrations for the still-shared database permanently stay with
+  // the monolith (it's the schema's source of truth) even though the
+  // broader /api/admin prefix below now goes to Admin Service.
+  { pathFilter: "/api/admin/migrations", serviceUrl: MONOLITH_URL },
   { pathFilter: "/api/auth", serviceUrl: process.env.AUTH_SERVICE_URL },
   { pathFilter: "/api/users", serviceUrl: process.env.USER_SERVICE_URL },
   { pathFilter: "/api/videos", serviceUrl: process.env.VIDEO_SERVICE_URL },

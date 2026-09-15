@@ -1,6 +1,6 @@
 import express, { type Express } from "express";
 import cors from "cors";
-import migrationsRoutes from "./routes/migrations.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 import { errorHandlerMiddleware } from "./middleware/errorHandler.js";
 
 class App {
@@ -18,14 +18,8 @@ class App {
   }
 
   private initializeRoutes() {
-    this.app.get("/api/health", (req, res) => res.json({ status: "ok" }));
-
-    // Every business domain has moved to its own service (see the migration
-    // plan) — this is the last thing the monolith owns: schema migrations
-    // for the still-shared database, which don't belong to any single
-    // service. The gateway routes /api/admin/migrations here and everything
-    // else under /api/admin to admin-service.
-    this.app.use("/api/admin/migrations", migrationsRoutes);
+    this.app.get("/health", (_req, res) => res.json({ status: "ok", service: "admin-service" }));
+    this.app.use("/api/admin", adminRoutes);
   }
 
   private initializeErrorHandler() {

@@ -1,10 +1,10 @@
 # Local dev stack for the microservices migration (see the plan for step numbers).
 # Runs alongside docker-compose.yml (the still-live monolith) — the gateway
 # defaults every route to MONOLITH_URL until a given service is actually
-# extracted and given its own *_SERVICE_URL. auth-service,
-# notification-service, video-service, comment-service, history-service,
-# and user-service are real extractions already; only admin-service remains
-# a stub gated behind a Compose profile.
+# extracted and given its own *_SERVICE_URL. All seven services (auth,
+# notification, video, comment, history, user, admin) are real extractions —
+# the monolith's only remaining job is schema migrations for the still-shared
+# database (/api/admin/migrations), which it keeps permanently.
 #
 # Usage: docker compose -f docker-compose.yml -f docker-compose.microservices.yml up
 
@@ -24,13 +24,14 @@ services:
       VIDEO_SERVICE_URL: http://video-service:5013
       COMMENT_SERVICE_URL: http://comment-service:5014
       HISTORY_SERVICE_URL: http://history-service:5015
-      ADMIN_SERVICE_URL:
+      ADMIN_SERVICE_URL: http://admin-service:5016
     depends_on:
       - server
       - user-service
       - video-service
       - comment-service
       - history-service
+      - admin-service
     ports:
       - "5000:5000"
 
@@ -177,6 +178,7 @@ services:
     ports:
       - "5015:5015"
 
+  # Actually extracted (migration plan step 8) — runs by default alongside the monolith.
   admin-service:
     build:
       context: .
@@ -184,8 +186,20 @@ services:
     restart: unless-stopped
     environment:
       PORT: 5016
+      CLIENT_URL: ${CLIENT_URL}
       JWT_SECRET: ${JWT_SECRET}
-    profiles: ["admin-service"]
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      VIDEO_SERVICE_URL: http://video-service:5013
+      COMMENT_SERVICE_URL: http://comment-service:5014
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "5016:5016"
 
   # Actually extracted (migration plan step 2) — runs by default alongside the monolith.
   notification-service:

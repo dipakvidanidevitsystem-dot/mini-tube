@@ -2,9 +2,7 @@ import { eq, desc } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { comments, users } from "../db/schema.js";
 
-// Comment Service owns this table for real now — the monolith keeps only the
-// read used by the still-monolithic admin domain (comment-service has its
-// own full copy for everything else).
+// Read-only — Comment Service owns writes.
 class CommentRepository {
   async listAllWithAuthor() {
     return db

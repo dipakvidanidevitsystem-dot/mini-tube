@@ -2,9 +2,7 @@ import { eq, desc } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { videos, users } from "../db/schema.js";
 
-// Video Service owns this table for real now — the monolith keeps only the
-// read used by the still-monolithic admin domain (video-service has its own
-// full copy for everything else).
+// Read-only — Video Service owns writes.
 class VideoRepository {
   async listAllWithCreatorSummary() {
     return db
