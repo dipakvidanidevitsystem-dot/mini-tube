@@ -1,0 +1,239 @@
+// MiniTube — full database schema (DBML)
+// Paste this into https://dbdiagram.io to render/edit visually.
+//
+// This is the single shared MySQL database every microservice still connects
+// to during the migration's interim state (see docs/flowdiagram/). Each
+// table's `Note` says which service currently owns writes to it — that's
+// the intended boundary for a future "database per service" split, not a
+// physical separation today.
+//
+// Source of truth: server/src/db/schema.ts (kept in the monolith as the
+// canonical schema — see docs/flowdiagram/services-overview.md).
+
+Project minitube {
+  database_type: 'MySQL'
+  note: 'MiniTube — a MERN-stack YouTube clone, backend split into microservices sharing one MySQL instance.'
+}
+
+//
+// ── Enums ────────────────────────────────────────────────────────────────
+//
+
+Enum user_role {
+  user
+  admin
+}
+
+Enum video_visibility {
+  public
+  private
+}
+
+Enum video_processing_status {
+  pending
+  ready
+  failed
+}
+
+Enum report_status {
+  pending
+  reviewed
+}
+
+//
+// ── Tables ───────────────────────────────────────────────────────────────
+//
+
+Table minitube_users {
+  id int [pk, increment]
+  name varchar(100) [not null]
+  email varchar(255) [not null, unique]
+  password varchar(255) [not null, note: 'bcrypt hash']
+  profile_image varchar(500)
+  role user_role [not null, default: 'user']
+  disabled boolean [not null, default: false]
+  notify_new_subscriber boolean [not null, default: true]
+  notify_video_uploaded boolean [not null, default: true]
+  notify_comment boolean [not null, default: true]
+  notify_like boolean [not null, default: true]
+  created_at timestamp [not null, default: `now()`]
+
+  Note: 'Owner: auth-service (credentials) + user-service (profile/prefs). Read by nearly every other service.'
+}
+
+Table minitube_videos {
+  id int [pk, increment]
+  user_id int [not null]
+  title varchar(200) [not null]
+  description text
+  video_url varchar(500) [not null]
+  thumbnail_url varchar(500) [not null]
+  category varchar(100)
+  visibility video_visibility [not null, default: 'public']
+  views int [not null, default: 0]
+  duration int [not null, default: 0, note: 'seconds']
+  processing_status video_processing_status [not null, default: 'ready']
+  processing_error text
+  created_at timestamp [not null, default: `now()`]
+
+  Note: 'Owner: video-service. Uploads go through ffmpeg transcoding + Cloudinary before processing_status becomes "ready".'
+}
+
+Table minitube_comments {
+  id int [pk, increment]
+  video_id int [not null]
+  user_id int [not null]
+  parent_id int [note: 'self-reference for replies — NOT a DB-level FK, app-enforced only']
+  comment text [not null]
+  created_at timestamp [not null, default: `now()`]
+
+  Note: 'Owner: comment-service.'
+}
+
+Table minitube_likes {
+  id int [pk, increment]
+  video_id int [not null]
+  user_id int [not null]
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (video_id, user_id) [unique, name: 'minitube_likes_video_user_unique']
+  }
+
+  Note: 'Owner: video-service. One like per user per video.'
+}
+
+Table minitube_comment_likes {
+  id int [pk, increment]
+  comment_id int [not null]
+  user_id int [not null]
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (comment_id, user_id) [unique, name: 'minitube_comment_likes_comment_user_unique']
+  }
+
+  Note: 'Owner: comment-service. One like per user per comment.'
+}
+
+Table minitube_subscriptions {
+  id int [pk, increment]
+  subscriber_id int [not null]
+  channel_id int [not null]
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (subscriber_id, channel_id) [unique, name: 'minitube_subscriptions_subscriber_channel_unique']
+  }
+
+  Note: 'Owner: user-service. Both columns reference minitube_users — a user subscribing to another user (channel).'
+}
+
+Table minitube_password_resets {
+  id int [pk, increment]
+  user_id int [not null]
+  token_hash varchar(64) [not null, note: 'sha256 of the raw reset token emailed to the user']
+  expires_at timestamp [not null]
+  created_at timestamp [not null, default: `now()`]
+
+  Note: 'Owner: auth-service.'
+}
+
+Table minitube_watch_history {
+  id int [pk, increment]
+  user_id int [not null]
+  video_id int [not null]
+  watched_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (user_id, video_id) [unique, name: 'minitube_watch_history_user_video_unique']
+  }
+
+  Note: 'Owner: history-service. Upserted (touched) on repeat views rather than duplicated.'
+}
+
+Table minitube_saved_videos {
+  id int [pk, increment]
+  user_id int [not null]
+  video_id int [not null]
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (user_id, video_id) [unique, name: 'minitube_saved_videos_user_video_unique']
+  }
+
+  Note: 'Owner: history-service ("watch later" list).'
+}
+
+Table minitube_video_views {
+  id int [pk, increment]
+  video_id int [not null]
+  user_id int [note: 'nullable — anonymous views allowed; set null if the user is later deleted']
+  viewed_at timestamp [not null, default: `now()`]
+  watched_seconds int [not null, default: 0]
+
+  indexes {
+    (video_id, viewed_at) [name: 'minitube_video_views_video_viewed_at_idx']
+  }
+
+  Note: 'Owner: video-service. One row per view/session — powers watch-time and dashboard analytics.'
+}
+
+Table minitube_video_milestones {
+  id int [pk, increment]
+  video_id int [not null]
+  milestone int [not null, note: 'e.g. 10, 50, 100, 500, 1000, 5001, 10000, 50000, 100000 views']
+  reached_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (video_id, milestone) [unique, name: 'minitube_video_milestones_video_milestone_unique']
+  }
+
+  Note: 'Owner: video-service. Recorded once per milestone crossed, drives the "recent activity" feed.'
+}
+
+Table minitube_reports {
+  id int [pk, increment]
+  video_id int [not null]
+  reporter_id int [not null]
+  reason text [not null]
+  status report_status [not null, default: 'pending']
+  created_at timestamp [not null, default: `now()`]
+
+  Note: 'Owner: video-service creates rows; admin-service reviews them.'
+}
+
+//
+// ── Relationships ────────────────────────────────────────────────────────
+//
+
+Ref: minitube_videos.user_id > minitube_users.id [delete: cascade]
+
+Ref: minitube_comments.video_id > minitube_videos.id [delete: cascade]
+Ref: minitube_comments.user_id > minitube_users.id [delete: cascade]
+Ref: minitube_comments.parent_id > minitube_comments.id
+
+Ref: minitube_likes.video_id > minitube_videos.id [delete: cascade]
+Ref: minitube_likes.user_id > minitube_users.id [delete: cascade]
+
+Ref: minitube_comment_likes.comment_id > minitube_comments.id [delete: cascade]
+Ref: minitube_comment_likes.user_id > minitube_users.id [delete: cascade]
+
+Ref: minitube_subscriptions.subscriber_id > minitube_users.id [delete: cascade]
+Ref: minitube_subscriptions.channel_id > minitube_users.id [delete: cascade]
+
+Ref: minitube_password_resets.user_id > minitube_users.id [delete: cascade]
+
+Ref: minitube_watch_history.user_id > minitube_users.id [delete: cascade]
+Ref: minitube_watch_history.video_id > minitube_videos.id [delete: cascade]
+
+Ref: minitube_saved_videos.user_id > minitube_users.id [delete: cascade]
+Ref: minitube_saved_videos.video_id > minitube_videos.id [delete: cascade]
+
+Ref: minitube_video_views.video_id > minitube_videos.id [delete: cascade]
+Ref: minitube_video_views.user_id > minitube_users.id [delete: set null]
+
+Ref: minitube_video_milestones.video_id > minitube_videos.id [delete: cascade]
+
+Ref: minitube_reports.video_id > minitube_videos.id [delete: cascade]
+Ref: minitube_reports.reporter_id > minitube_users.id [delete: cascade]
