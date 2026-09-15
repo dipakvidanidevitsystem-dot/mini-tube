@@ -1,0 +1,37 @@
+import express, { type Express } from "express";
+import cors from "cors";
+import commentRoutes from "./routes/comment.routes.js";
+import videoCommentsRoutes from "./routes/videoComments.routes.js";
+import { errorHandlerMiddleware } from "./middleware/errorHandler.js";
+
+class App {
+  app: Express = express();
+
+  constructor() {
+    this.initializeMiddleware();
+    this.initializeRoutes();
+    this.initializeErrorHandler();
+  }
+
+  private initializeMiddleware() {
+    this.app.use(cors({ origin: process.env.CLIENT_URL }));
+    this.app.use(express.json());
+  }
+
+  private initializeRoutes() {
+    this.app.get("/health", (_req, res) => res.json({ status: "ok", service: "comment-service" }));
+
+    this.app.use("/api/comments", commentRoutes);
+    // Nested under /api/videos/:id/comments — the gateway routes that
+    // specific sub-path here even though /api/videos generally goes to
+    // video-service (see gateway/src/routes.ts).
+    this.app.use("/api/videos", videoCommentsRoutes);
+  }
+
+  private initializeErrorHandler() {
+    this.app.use(errorHandlerMiddleware.handle);
+  }
+}
+
+export { App };
+export default new App().app;

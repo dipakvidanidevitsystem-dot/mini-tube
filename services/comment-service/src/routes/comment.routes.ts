@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authMiddleware } from "../middleware/auth.js";
+import { verifyJwt } from "@mini-tube/auth-middleware";
 import commentController from "../controllers/comment.controller.js";
 
 class CommentRoutes {
@@ -10,8 +10,8 @@ class CommentRoutes {
   }
 
   private initializeRoutes() {
-    this.router.delete("/:id", authMiddleware.authenticate, commentController.remove);
-    this.router.post("/:id/like", authMiddleware.authenticate, commentController.toggleLike);
+    this.router.delete("/:id", verifyJwt, commentController.remove);
+    this.router.post("/:id/like", verifyJwt, commentController.toggleLike);
   }
 }
 

@@ -112,35 +112,18 @@ function layout({ preheader, heading, bodyHtml, ctaLabel, ctaUrl }: LayoutOption
 </html>`;
 }
 
-export function passwordChangedEmail(name: string) {
+export function commentEmail(ownerName: string, commenterName: string, videoTitle: string, videoUrl: string) {
   return {
-    subject: "Your MiniTube password was changed",
+    subject: "New comment on your video",
     html: layout({
-      preheader: "Your password was just changed. Wasn't you? Secure your account now.",
-      heading: "Your password was changed",
+      preheader: `${commenterName} commented on "${videoTitle}".`,
+      heading: "New comment on your video",
       bodyHtml: `
-        <p style="margin: 0 0 16px;">Hi ${name}, this is a confirmation that the password for your MiniTube account was just changed.</p>
-        <p style="margin: 0;"><strong>If this wasn't you</strong>, your account may be at risk — reset your password immediately and review your recent activity.</p>
+        <p style="margin: 0 0 16px;">Hi ${ownerName}, <strong>${commenterName}</strong> just commented on your video "<strong>${videoTitle}</strong>".</p>
+        <p style="margin: 0;">Jump in and reply to keep the conversation going with your viewers.</p>
       `,
-      ctaLabel: "Secure your account",
-      ctaUrl: `${process.env.CLIENT_URL}/forgot-password`,
+      ctaLabel: "View the comment",
+      ctaUrl: videoUrl,
     }),
   };
 }
-
-export function newSubscriberEmail(channelName: string, subscriberName: string) {
-  return {
-    subject: "You have a new subscriber!",
-    html: layout({
-      preheader: `${subscriberName} just subscribed to your MiniTube channel.`,
-      heading: "You have a new subscriber! 🎉",
-      bodyHtml: `
-        <p style="margin: 0 0 16px;">Hi ${channelName}, great news — <strong>${subscriberName}</strong> just subscribed to your channel.</p>
-        <p style="margin: 0;">Keep the momentum going by checking your channel stats and posting your next video.</p>
-      `,
-      ctaLabel: "View your dashboard",
-      ctaUrl: `${process.env.CLIENT_URL}/dashboard`,
-    }),
-  };
-}
-

@@ -1,7 +1,5 @@
 import express, { type Express } from "express";
 import cors from "cors";
-import videoCommentsRoutes from "./routes/videoComments.routes.js";
-import commentRoutes from "./routes/comment.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import historyRoutes from "./routes/history.routes.js";
 import savedRoutes from "./routes/saved.routes.js";
@@ -25,11 +23,9 @@ class App {
   private initializeRoutes() {
     this.app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
-    // /api/auth is now owned by services/auth-service (migration plan step 3),
-    // and video CRUD by services/video-service (step 4) — the gateway routes
-    // those prefixes there instead of here. Nested video comments stay here.
-    this.app.use("/api/videos", videoCommentsRoutes);
-    this.app.use("/api/comments", commentRoutes);
+    // /api/auth (step 3), video CRUD + nested /api/videos/:id/comments
+    // (step 4), and /api/comments (step 5) are now owned by their respective
+    // services — the gateway routes those prefixes there instead of here.
     this.app.use("/api/users", userRoutes);
     this.app.use("/api/history", historyRoutes);
     this.app.use("/api/saved", savedRoutes);
