@@ -3,6 +3,10 @@
 .env
 .DS_Store
 
+# monorepo workspaces: gateway/, shared/*, services/*
+node_modules/
+dist/
+
 # local Claude Code tool settings (machine-specific, may contain local paths/tokens)
 .claude/
 

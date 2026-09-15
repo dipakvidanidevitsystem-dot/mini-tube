@@ -1,0 +1,33 @@
+name: history-service
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/history-service/**'
+      - 'shared/**'
+      - 'package.json'
+      - 'package-lock.json'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build --workspace=services/history-service
+
+      - name: Build image
+        run: docker build -f services/history-service/Dockerfile -t mini-tube/history-service:${{ github.sha }} .
+
+      - name: Push image
+        run: echo "push mini-tube/history-service:${{ github.sha }} to registry"
+
+      - name: Deploy
+        run: echo "deploy history-service (e.g. docker compose pull && up, or kubectl set image)"

@@ -1,0 +1,127 @@
+# Local dev stack for the microservices skeleton (Step 1 of the migration plan).
+# Runs alongside docker-compose.yml (the still-live monolith) — the gateway
+# defaults every route to MONOLITH_URL until a given service is actually
+# extracted and given its own *_SERVICE_URL.
+#
+# Usage: docker compose -f docker-compose.yml -f docker-compose.microservices.yml up
+
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5000
+      CLIENT_URL: ${CLIENT_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      MONOLITH_URL: http://server:${PORT}
+      AUTH_SERVICE_URL:
+      USER_SERVICE_URL:
+      VIDEO_SERVICE_URL:
+      COMMENT_SERVICE_URL:
+      HISTORY_SERVICE_URL:
+      ADMIN_SERVICE_URL:
+    depends_on:
+      - server
+    ports:
+      - "5000:5000"
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5011
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    profiles: ["auth-service"]
+
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5012
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    profiles: ["user-service"]
+
+  video-service:
+    build:
+      context: .
+      dockerfile: services/video-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5013
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+    profiles: ["video-service"]
+
+  comment-service:
+    build:
+      context: .
+      dockerfile: services/comment-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5014
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    profiles: ["comment-service"]
+
+  history-service:
+    build:
+      context: .
+      dockerfile: services/history-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5015
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    profiles: ["history-service"]
+
+  admin-service:
+    build:
+      context: .
+      dockerfile: services/admin-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5016
+      JWT_SECRET: ${JWT_SECRET}
+    profiles: ["admin-service"]
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5017
+      JWT_SECRET: ${JWT_SECRET}
+      CLIENT_URL: ${CLIENT_URL}
+    profiles: ["notification-service"]

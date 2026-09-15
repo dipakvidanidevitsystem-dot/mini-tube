@@ -1,0 +1,13 @@
+{
+  "name": "mini-tube",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "gateway",
+    "shared/*",
+    "services/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  }
+}
