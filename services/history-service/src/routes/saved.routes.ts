@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authMiddleware } from "../middleware/auth.js";
+import { verifyJwt } from "@mini-tube/auth-middleware";
 import savedController from "../controllers/saved.controller.js";
 
 class SavedRoutes {
@@ -10,8 +10,8 @@ class SavedRoutes {
   }
 
   private initializeRoutes() {
-    this.router.get("/", authMiddleware.authenticate, savedController.list);
-    this.router.post("/:videoId/toggle", authMiddleware.authenticate, savedController.toggle);
+    this.router.get("/", verifyJwt, savedController.list);
+    this.router.post("/:videoId/toggle", verifyJwt, savedController.toggle);
   }
 }
 

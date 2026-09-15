@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createProxyMiddleware } from "http-proxy-middleware";
 
 // Every prefix defaults to the still-running monolith. As each service is
-// actually extracted (see migration plan step 5), set its SERVICE_URL env var
+// actually extracted (see the migration plan), set its SERVICE_URL env var
 // and it takes over that prefix — no other route's behavior changes.
 const MONOLITH_URL = process.env.MONOLITH_URL || "http://localhost:5001";
 

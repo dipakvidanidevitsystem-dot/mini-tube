@@ -2,9 +2,9 @@
 # Runs alongside docker-compose.yml (the still-live monolith) — the gateway
 # defaults every route to MONOLITH_URL until a given service is actually
 # extracted and given its own *_SERVICE_URL. auth-service,
-# notification-service, video-service, and comment-service are real
-# extractions already; the rest are stubs gated behind Compose profiles
-# until they're extracted for real.
+# notification-service, video-service, comment-service, and history-service
+# are real extractions already; the rest are stubs gated behind Compose
+# profiles until they're extracted for real.
 #
 # Usage: docker compose -f docker-compose.yml -f docker-compose.microservices.yml up
 
@@ -23,12 +23,13 @@ services:
       USER_SERVICE_URL:
       VIDEO_SERVICE_URL: http://video-service:5013
       COMMENT_SERVICE_URL: http://comment-service:5014
-      HISTORY_SERVICE_URL:
+      HISTORY_SERVICE_URL: http://history-service:5015
       ADMIN_SERVICE_URL:
     depends_on:
       - server
       - video-service
       - comment-service
+      - history-service
     ports:
       - "5000:5000"
 
@@ -137,6 +138,7 @@ services:
     ports:
       - "5014:5014"
 
+  # Actually extracted (migration plan step 6) — runs by default alongside the monolith.
   history-service:
     build:
       context: .
@@ -144,13 +146,18 @@ services:
     restart: unless-stopped
     environment:
       PORT: 5015
+      CLIENT_URL: ${CLIENT_URL}
       JWT_SECRET: ${JWT_SECRET}
       DB_HOST: mysql
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
-    profiles: ["history-service"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "5015:5015"
 
   admin-service:
     build:
