@@ -3,16 +3,13 @@ import { db } from "../db/index.js";
 import { users } from "../db/schema.js";
 
 type User = typeof users.$inferSelect;
-type NewUser = typeof users.$inferInsert;
 
+// User Service owns this table's profile fields for real now (Auth Service
+// owns credentials) — the monolith keeps only what its own admin domain and
+// auth middleware still need directly against the shared DB.
 class UserRepository {
   async findById(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
-  }
-
-  async findByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
     return user;
   }
 
@@ -22,28 +19,6 @@ class UserRepository {
       .from(users)
       .where(eq(users.id, id));
     return user;
-  }
-
-  async findProfileById(id: number) {
-    const [user] = await db
-      .select({
-        id: users.id,
-        name: users.name,
-        profileImage: users.profileImage,
-        createdAt: users.createdAt,
-      })
-      .from(users)
-      .where(eq(users.id, id));
-    return user;
-  }
-
-  async create(data: NewUser) {
-    const [result] = await db.insert(users).values(data);
-    return this.findById(result.insertId) as Promise<User>;
-  }
-
-  async update(id: number, data: Partial<NewUser>) {
-    await db.update(users).set(data).where(eq(users.id, id));
   }
 
   async setDisabled(id: number, disabled: boolean) {

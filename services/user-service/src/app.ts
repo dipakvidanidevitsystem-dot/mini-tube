@@ -1,6 +1,6 @@
 import express, { type Express } from "express";
 import cors from "cors";
-import adminRoutes from "./routes/admin.routes.js";
+import userRoutes from "./routes/user.routes.js";
 import { errorHandlerMiddleware } from "./middleware/errorHandler.js";
 
 class App {
@@ -18,13 +18,8 @@ class App {
   }
 
   private initializeRoutes() {
-    this.app.get("/api/health", (req, res) => res.json({ status: "ok" }));
-
-    // /api/auth (step 3), video CRUD + nested /api/videos/:id/comments
-    // (step 4), /api/comments (step 5), /api/history + /api/saved (step 6),
-    // and /api/users (step 7) are now owned by their respective services —
-    // the gateway routes those prefixes there instead of here.
-    this.app.use("/api/admin", adminRoutes);
+    this.app.get("/health", (_req, res) => res.json({ status: "ok", service: "user-service" }));
+    this.app.use("/api/users", userRoutes);
   }
 
   private initializeErrorHandler() {

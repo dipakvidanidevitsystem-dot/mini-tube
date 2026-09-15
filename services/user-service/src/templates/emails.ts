@@ -143,4 +143,3 @@ export function newSubscriberEmail(channelName: string, subscriberName: string) 
     }),
   };
 }
-

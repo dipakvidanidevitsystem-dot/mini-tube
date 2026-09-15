@@ -1,48 +1,10 @@
-import { eq, and, or, isNull, isNotNull, gte, desc, sql, type SQL } from "drizzle-orm";
+import { eq, and, isNotNull, gte, desc, sql, type SQL } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { videoViews, videoMilestones, videos } from "../db/schema.js";
 import { likeCountExpr } from "./video.repository.js";
 
-const VIEW_MILESTONES = [10, 50, 100, 500, 1000, 5001, 10000, 50000, 100000];
-
+// Read-only from User Service's perspective — Video Service owns writes.
 class VideoViewRepository {
-  async insertView(videoId: number, userId: number | null) {
-    const [result] = await db.insert(videoViews).values({ videoId, userId });
-    return result;
-  }
-
-  async updateWatchProgress(videoViewId: number, videoId: number, seconds: number, userId?: number) {
-    const ownerCondition = userId
-      ? or(eq(videoViews.userId, userId), isNull(videoViews.userId))
-      : isNull(videoViews.userId);
-
-    await db
-      .update(videoViews)
-      .set({ watchedSeconds: sql`greatest(${videoViews.watchedSeconds}, ${seconds})` })
-      .where(and(eq(videoViews.id, videoViewId), eq(videoViews.videoId, videoId), ownerCondition));
-  }
-
-  async checkMilestones(videoId: number, views: number) {
-    const crossed = VIEW_MILESTONES.filter((m) => views >= m);
-    if (crossed.length === 0) return;
-
-    const existing = await db
-      .select({ milestone: videoMilestones.milestone })
-      .from(videoMilestones)
-      .where(eq(videoMilestones.videoId, videoId));
-    const existingSet = new Set(existing.map((row) => row.milestone));
-    const missing = crossed.filter((m) => !existingSet.has(m));
-
-    await Promise.all(
-      missing.map((milestone) =>
-        db
-          .insert(videoMilestones)
-          .values({ videoId, milestone })
-          .catch(() => {})
-      )
-    );
-  }
-
   async watchStatsForUser(userId: number) {
     const [{ totalWatchedSeconds, avgWatchedSeconds }] = await db
       .select({

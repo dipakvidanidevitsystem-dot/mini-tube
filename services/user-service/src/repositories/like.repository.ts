@@ -1,24 +1,9 @@
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { likes, videos, users } from "../db/schema.js";
 
+// Read-only from User Service's perspective — Video Service owns writes.
 class LikeRepository {
-  async find(videoId: number, userId: number) {
-    const [existing] = await db
-      .select()
-      .from(likes)
-      .where(and(eq(likes.videoId, videoId), eq(likes.userId, userId)));
-    return existing;
-  }
-
-  async create(videoId: number, userId: number) {
-    await db.insert(likes).values({ videoId, userId });
-  }
-
-  async delete(id: number) {
-    await db.delete(likes).where(eq(likes.id, id));
-  }
-
   async countForVideo(videoId: number) {
     const [{ likeCount }] = await db
       .select({ likeCount: sql<number>`count(*)`.mapWith(Number) })
