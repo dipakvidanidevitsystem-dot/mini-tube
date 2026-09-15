@@ -2,7 +2,7 @@
 
 The full shared MySQL schema, rendered as a Mermaid ER diagram — viewable directly in VS Code or GitHub, no external tool needed. For an editable version (drag nodes, export SVG/PNG, tweak live), see [`database.dbml`](./database.dbml) on [dbdiagram.io](https://dbdiagram.io).
 
-> All 12 tables currently live in **one shared MySQL instance**. The 🏷️ tag on each table shows which microservice owns writes to it today — see [`../flowdiagram/services-overview.md`](../flowdiagram/services-overview.md) for the full service breakdown.
+> All 13 tables currently live in **one shared MySQL instance**. The 🏷️ tag on each table shows which microservice owns writes to it today — see [`../flowdiagram/services-overview.md`](../flowdiagram/services-overview.md) for the full service breakdown.
 
 ```mermaid
 erDiagram
@@ -75,6 +75,14 @@ erDiagram
         timestamp created_at
     }
 
+    minitube_refresh_tokens {
+        int id PK
+        int user_id FK
+        varchar token_hash
+        timestamp expires_at
+        timestamp created_at
+    }
+
     minitube_watch_history {
         int id PK
         int user_id FK
@@ -124,6 +132,7 @@ erDiagram
     minitube_users ||--o{ minitube_subscriptions : "subscribes as subscriber_id"
     minitube_users ||--o{ minitube_subscriptions : "subscribed to as channel_id"
     minitube_users ||--o{ minitube_password_resets : "requests"
+    minitube_users ||--o{ minitube_refresh_tokens : "holds sessions"
     minitube_users ||--o{ minitube_watch_history : "watches"
     minitube_videos ||--o{ minitube_watch_history : "watched in"
     minitube_users ||--o{ minitube_saved_videos : "saves"
@@ -146,6 +155,7 @@ erDiagram
 | `minitube_comment_likes` | 💬 comment-service | Unique per `(comment_id, user_id)` |
 | `minitube_subscriptions` | 👤 user-service | Both FKs point at `minitube_users` — a user-to-user relationship |
 | `minitube_password_resets` | 🔐 auth-service | `token_hash` stores a sha256 hash, never the raw emailed token |
+| `minitube_refresh_tokens` | 🔐 auth-service | One row per active session's refresh token (sha256 hash, never the raw cookie value). Rotated (row deleted, new row inserted) on every `/api/auth/refresh` call |
 | `minitube_watch_history` | 🕘 history-service | Upserted (touched) on repeat views, not duplicated |
 | `minitube_saved_videos` | 🕘 history-service | The "watch later" list |
 | `minitube_video_views` | 🎬 video-service | One row per view session; `user_id` is nullable for anonymous viewers |

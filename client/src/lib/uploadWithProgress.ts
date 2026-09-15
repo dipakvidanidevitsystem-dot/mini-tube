@@ -12,9 +12,8 @@ export function uploadWithProgress<T>(
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", url);
-
-    const token = localStorage.getItem("token");
-    if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    // Auth travels via the httpOnly access_token cookie, not a header.
+    xhr.withCredentials = true;
 
     xhr.upload.onprogress = (e) => {
       if (!e.lengthComputable || !onProgress) return;

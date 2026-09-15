@@ -80,7 +80,6 @@ export interface ChannelProfile {
 }
 
 export interface AuthResponse {
-  token: string;
   user: User;
 }
 

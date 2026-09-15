@@ -20,17 +20,19 @@ import {
 } from "@phosphor-icons/react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { logout as logoutAction } from "../../store/slices/authSlice";
+import { useLogoutMutation } from "../../store/api/authApi";
 
 export default function NavDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const user = useAppSelector((state) => state.auth.user);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [logoutMutation] = useLogoutMutation();
 
   if (!user) return null;
 
   const handleLogout = () => {
     onClose();
-    dispatch(logoutAction());
+    logoutMutation().finally(() => dispatch(logoutAction()));
     navigate("/");
   };
 

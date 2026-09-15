@@ -16,19 +16,23 @@ declare global {
   }
 }
 
+const ACCESS_TOKEN_COOKIE = "access_token";
+
 /**
  * Verifies the JWT signature locally (no call to Auth Service per request).
  * Auth Service is responsible for putting `role`/`disabled` in the token claims
- * and re-issuing a token whenever those change.
+ * and re-issuing a token whenever those change. The token itself travels as an
+ * httpOnly `access_token` cookie — the consuming service must run
+ * `cookie-parser` before this middleware so `req.cookies` is populated.
  */
 export function verifyJwt(req: Request, res: Response, next: NextFunction) {
-  const header = req.headers.authorization;
-  if (!header || !header.startsWith("Bearer ")) {
+  const token = req.cookies?.[ACCESS_TOKEN_COOKIE];
+  if (!token) {
     return res.status(401).json({ message: "Authentication required" });
   }
 
   try {
-    const payload = jwt.verify(header.slice(7), process.env.JWT_SECRET as string) as AuthTokenPayload;
+    const payload = jwt.verify(token, process.env.JWT_SECRET as string) as AuthTokenPayload;
     if (payload.disabled) {
       return res.status(403).json({ message: "Your account has been disabled. Please contact support." });
     }
@@ -40,10 +44,10 @@ export function verifyJwt(req: Request, res: Response, next: NextFunction) {
 }
 
 export function optionalVerifyJwt(req: Request, _res: Response, next: NextFunction) {
-  const header = req.headers.authorization;
-  if (header?.startsWith("Bearer ")) {
+  const token = req.cookies?.[ACCESS_TOKEN_COOKIE];
+  if (token) {
     try {
-      const payload = jwt.verify(header.slice(7), process.env.JWT_SECRET as string) as AuthTokenPayload;
+      const payload = jwt.verify(token, process.env.JWT_SECRET as string) as AuthTokenPayload;
       if (!payload.disabled) {
         req.user = { id: payload.id, role: payload.role };
       }

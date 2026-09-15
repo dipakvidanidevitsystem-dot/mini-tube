@@ -17,7 +17,8 @@ export function getSocket(): Socket {
 
 export function connectSocket() {
   const instance = getSocket();
-  instance.auth = { token: localStorage.getItem("token") };
+  // Auth travels via the httpOnly access_token cookie, sent automatically
+  // on the handshake request because `withCredentials: true` is set above.
   if (!instance.connected) instance.connect();
 }
 

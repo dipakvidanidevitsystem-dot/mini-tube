@@ -19,6 +19,7 @@ import {
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { logout as logoutAction } from "../../store/slices/authSlice";
 import { toggleMode as toggleModeAction } from "../../store/slices/themeSlice";
+import { useLogoutMutation } from "../../store/api/authApi";
 import NotificationBell from "../NotificationBell";
 
 export default function AccountMenuItems({
@@ -36,12 +37,13 @@ export default function AccountMenuItems({
   const mode = useAppSelector((state) => state.theme.mode);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [logoutMutation] = useLogoutMutation();
 
   if (!user) return null;
 
   const handleLogout = () => {
     onNavigate();
-    dispatch(logoutAction());
+    logoutMutation().finally(() => dispatch(logoutAction()));
     navigate("/");
   };
 

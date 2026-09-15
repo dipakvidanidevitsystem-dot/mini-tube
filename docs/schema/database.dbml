@@ -139,6 +139,16 @@ Table minitube_password_resets {
   Note: 'Owner: auth-service.'
 }
 
+Table minitube_refresh_tokens {
+  id int [pk, increment]
+  user_id int [not null]
+  token_hash varchar(64) [not null, note: 'sha256 of the raw refresh-token cookie value']
+  expires_at timestamp [not null]
+  created_at timestamp [not null, default: `now()`]
+
+  Note: 'Owner: auth-service. One row per active session; rotated (deleted + reinserted) on every /api/auth/refresh call.'
+}
+
 Table minitube_watch_history {
   id int [pk, increment]
   user_id int [not null]
@@ -223,6 +233,8 @@ Ref: minitube_subscriptions.subscriber_id > minitube_users.id [delete: cascade]
 Ref: minitube_subscriptions.channel_id > minitube_users.id [delete: cascade]
 
 Ref: minitube_password_resets.user_id > minitube_users.id [delete: cascade]
+
+Ref: minitube_refresh_tokens.user_id > minitube_users.id [delete: cascade]
 
 Ref: minitube_watch_history.user_id > minitube_users.id [delete: cascade]
 Ref: minitube_watch_history.video_id > minitube_videos.id [delete: cascade]

@@ -107,6 +107,16 @@ export const passwordResets = mysqlTable("minitube_password_resets", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const refreshTokens = mysqlTable("minitube_refresh_tokens", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  tokenHash: varchar("token_hash", { length: 64 }).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const watchHistory = mysqlTable(
   "minitube_watch_history",
   {
@@ -224,6 +234,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   subscriptionsMade: many(subscriptions, { relationName: "subscriber" }),
   subscribers: many(subscriptions, { relationName: "channel" }),
   passwordResets: many(passwordResets),
+  refreshTokens: many(refreshTokens),
   watchHistory: many(watchHistory),
   savedVideos: many(savedVideos),
   commentLikes: many(commentLikes),
@@ -233,6 +244,10 @@ export const usersRelations = relations(users, ({ many }) => ({
 
 export const passwordResetsRelations = relations(passwordResets, ({ one }) => ({
   user: one(users, { fields: [passwordResets.userId], references: [users.id] }),
+}));
+
+export const refreshTokensRelations = relations(refreshTokens, ({ one }) => ({
+  user: one(users, { fields: [refreshTokens.userId], references: [users.id] }),
 }));
 
 export const videosRelations = relations(videos, ({ one, many }) => ({

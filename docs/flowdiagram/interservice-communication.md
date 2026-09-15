@@ -1,6 +1,6 @@
 # Interservice Communication
 
-The actual HTTP calls services make to each other. There is no message broker — every call is a direct HTTP request, secured either by JWT (for admin's forwarded requests) or a shared internal key (for the notification relay).
+The actual HTTP calls services make to each other. There is no message broker — every call is a direct HTTP request, secured either by the forwarded `access_token` cookie (for admin's forwarded requests) or a shared internal key (for the notification relay).
 
 > For where these calls fit into a full request's lifecycle, see [`master-flow.md`](./master-flow.md).
 
@@ -33,7 +33,7 @@ The same pattern is used for:
 
 ## 2. Admin forwarding pattern
 
-Admin-service doesn't duplicate the owner-or-admin authorization rule for deleting a video or comment — it forwards the admin's own bearer token to the service that actually owns that rule, and that service re-validates the JWT itself.
+Admin-service doesn't duplicate the owner-or-admin authorization rule for deleting a video or comment — it forwards the admin's own `access_token` cookie to the service that actually owns that rule, and that service re-validates the JWT itself.
 
 Source: [`services/admin-service/src/controllers/admin.controller.ts`](../../services/admin-service/src/controllers/admin.controller.ts)
 
@@ -43,9 +43,9 @@ sequenceDiagram
     participant A as admin-service
     participant Vid as video-service
 
-    C->>A: DELETE /api/admin/videos/:id<br/>Authorization: Bearer <admin token>
-    A->>A: verifyJwt + requireAdmin
-    A->>Vid: DELETE /api/videos/:id<br/>Authorization: Bearer <admin token> (forwarded)
+    C->>A: DELETE /api/admin/videos/:id<br/>Cookie: access_token=...
+    A->>A: verifyJwt (reads req.cookies.access_token) + requireAdmin
+    A->>Vid: DELETE /api/videos/:id<br/>Cookie: access_token=... (forwarded verbatim)
     Vid->>Vid: verifyJwt + owner-or-admin check
     Vid-->>A: 204 No Content
     A-->>C: 204 No Content

@@ -23,15 +23,21 @@ graph TD
     classDef error fill:#fecaca,stroke:#dc2626,color:#7f1d1d
     classDef svc fill:#e0e7ff,stroke:#4f46e5,color:#312e81
 
-    Start(["Client makes a request"]):::entry
-    Start --> HasToken{"Bearer token in<br/>localStorage?"}:::decision
-    HasToken -->|yes| Attach["Attach Authorization:<br/>Bearer &lt;token&gt; header"]
-    HasToken -->|no| NoAttach["No auth header sent"]
+    Start(["Client makes a request<br/>(fetch/axios with<br/>credentials: include)"]):::entry
+    Start --> HasCookie{"access_token httpOnly<br/>cookie present & valid?"}:::decision
+    HasCookie -->|yes, not expired| Attach["Cookie sent automatically<br/>by the browser — no JS<br/>ever reads the token"]
+    HasCookie -->|no / expired| Refresh["POST /api/auth/refresh<br/>Cookie: refresh_token=..."]
+    Refresh --> RefreshOk{"Refresh token valid<br/>&amp; not disabled?"}:::decision
+    RefreshOk -->|yes| Rotate["Rotate: delete old<br/>refresh_token row, issue new<br/>access_token + refresh_token cookies"]
+    RefreshOk -->|no| ClearAndLogin["Clear both cookies,<br/>client redirects to login"]:::error
+    Rotate --> Attach
     Attach --> Dispatch
-    NoAttach --> Dispatch
 
     Dispatch(["Request hits monolith :5001<br/>(today) — or gateway :5000<br/>once cut over"]):::entry
-    Dispatch --> R1{"Path matches<br/>/api/videos/:id/comments ?"}:::decision
+    Dispatch --> Helmet["helmet() + CORS(credentials: true)<br/>+ rate limiter<br/>(100 req/15min per IP, defense in depth<br/>at every service and at the gateway)"]:::entry
+    Helmet --> RateOk{"Under the<br/>rate limit?"}:::decision
+    RateOk -->|no| E429(["429 Too Many Requests"]):::error
+    RateOk -->|yes| R1{"Path matches<br/>/api/videos/:id/comments ?"}:::decision
     R1 -->|yes| Comment["→ comment-service :5014"]:::svc
     R1 -->|no| R2{"Path matches<br/>/api/admin/migrations ?"}:::decision
     R2 -->|yes| Monolith["→ stays on monolith :5001<br/>(schema source of truth)"]:::svc
@@ -57,10 +63,10 @@ graph TD
 
     NeedsAuth{"Route requires<br/>a valid user?"}:::decision
     NeedsAuth -->|no — public route| Handler
-    NeedsAuth -->|yes| VerifyJwt["verifyJwt (or optionalVerifyJwt):<br/>check signature + exp<br/>against shared JWT_SECRET"]
+    NeedsAuth -->|yes| VerifyJwt["verifyJwt (or optionalVerifyJwt):<br/>read req.cookies.access_token<br/>(cookie-parser already ran),<br/>check signature + exp<br/>against shared JWT_SECRET"]
 
-    VerifyJwt --> JwtOk{"Signature valid<br/>and not expired?"}:::decision
-    JwtOk -->|no| E401(["401 Unauthorized"]):::error
+    VerifyJwt --> JwtOk{"Cookie present, signature<br/>valid, and not expired?"}:::decision
+    JwtOk -->|no| E401(["401 Unauthorized<br/>(client's baseQueryWithReauth<br/>triggers a refresh + retry)"]):::error
     JwtOk -->|yes| DisabledCheck{"payload.disabled<br/>== true?"}:::decision
     DisabledCheck -->|yes| E403a(["403 — account disabled"]):::error
     DisabledCheck -->|no| SetUser["req.user = { id, role }<br/>(from JWT claims — no DB call)"]
@@ -79,7 +85,7 @@ graph TD
     DbOk -->|db error| E500(["500 Internal Server Error"]):::error
     DbOk -->|yes| IsAdminDelete{"Is this an admin<br/>video/comment delete?"}:::decision
 
-    IsAdminDelete -->|yes| Forward["admin-service forwards the<br/>SAME bearer token synchronously<br/>to video-service / comment-service"]:::forward
+    IsAdminDelete -->|yes| Forward["admin-service forwards the<br/>SAME access_token cookie synchronously<br/>to video-service / comment-service"]:::forward
     Forward --> ForwardResult{"Owning service's<br/>owner-or-admin check passes?"}:::decision
     ForwardResult -->|no| E403c(["403/404 relayed verbatim"]):::error
     ForwardResult -->|yes| NeedsNotify
@@ -94,7 +100,7 @@ graph TD
 
     Respond(["200 / 201 / 204<br/>JSON response to client"]):::success
 
-    class E401,E403a,E403b,E403c,E404,E500 error
+    class E401,E403a,E403b,E403c,E404,E429,E500,ClearAndLogin error
 ```
 
 ## Legend
@@ -110,7 +116,10 @@ graph TD
 
 ## Key things this diagram makes explicit
 
-- **Auth is stateless almost everywhere.** `verifyJwt`/`optionalVerifyJwt` never hit the database — `disabled` and `role` are trusted straight from the JWT claims (set at login/register time by auth-service). The one exception is the monolith's own `/api/admin/migrations` route, which still uses the older DB-backed `authMiddleware`.
+- **The JWT lives in an httpOnly cookie, not `localStorage`.** `access_token` (15 min) and `refresh_token` (30 days, opaque random string, `/api/auth` path only) are both `httpOnly`, `SameSite=Lax`, and `Secure` in production. No client-side JS ever reads the token — it can't be exfiltrated via XSS, and the browser attaches it automatically because every request is sent with `credentials: "include"`.
+- **Refresh is automatic and rotating.** On a 401, the client's RTK Query `baseQueryWithReauth` wrapper transparently calls `POST /api/auth/refresh`, which validates the presented refresh token against a hashed row in `minitube_refresh_tokens`, deletes it (rotation), and issues a brand-new access+refresh pair — the original request is retried once with no visible interruption. A refresh token that's expired, missing, or already rotated-out (replay) forces a real logout.
+- **Auth is stateless for the access token, stateful for the refresh token.** `verifyJwt`/`optionalVerifyJwt` never hit the database for the access token — `disabled` and `role` are trusted straight from the JWT claims (set at login/register time by auth-service). The refresh token *is* checked against the DB on every use, which is what makes sessions revocable. The monolith's own `/api/admin/migrations` route is the one exception that still does a DB lookup per request (its own older `authMiddleware`, `server/src/middleware/auth.ts`) — but it now reads the `access_token` cookie too, same as every other service, so it isn't broken by the cookie migration.
+- **Helmet, CORS, and rate limiting run at every layer.** `helmet()` and a default rate limiter (100 req/15min per IP, from the shared `@mini-tube/security-middleware` package) run at the gateway *and* at every individual service (defense in depth, in case a service is ever reached directly). `auth-service`'s `/register`, `/login`, `/forgot-password`, and `/reset-password` additionally share a much stricter limiter (8 req/15min) against brute-force/enumeration.
 - **The notification side-effect never affects the response.** It's dispatched after the main DB write succeeds and is genuinely fire-and-forget — a slow or dead notification-service delays or breaks nothing for the user.
-- **Admin video/comment deletes are the only place one service calls another synchronously mid-request** — everywhere else, a request is handled by exactly one service.
+- **Admin video/comment deletes are the only place one service calls another synchronously mid-request** — everywhere else, a request is handled by exactly one service. The forwarded call carries the admin's own `access_token` cookie (as a `Cookie` header), not a Bearer token.
 - **Routing is ordered, not a flat lookup** — the two path-based exceptions (nested comments, migrations) are checked *before* the general prefix rules, because Express/http-proxy-middleware take the first match.

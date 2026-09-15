@@ -10,7 +10,7 @@ export interface TokenPayload {
 
 class TokenService {
   static sign(payload: TokenPayload) {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: "15m" });
   }
 
   static verify(token: string): TokenPayload {

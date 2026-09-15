@@ -6,13 +6,13 @@ class AuthMiddleware {
   constructor(private readonly userRepository: UserRepository) {}
 
   authenticate = async (req: Request, res: Response, next: NextFunction) => {
-    const header = req.headers.authorization;
-    if (!header || !header.startsWith("Bearer ")) {
+    const token = req.cookies?.access_token;
+    if (!token) {
       return res.status(401).json({ message: "Authentication required" });
     }
 
     try {
-      const payload = TokenService.verify(header.slice(7));
+      const payload = TokenService.verify(token);
       const user = await this.userRepository.findAuthSnapshotById(payload.id);
       if (!user) {
         return res.status(401).json({ message: "Invalid or expired token" });
@@ -28,10 +28,10 @@ class AuthMiddleware {
   };
 
   optionalAuthenticate = async (req: Request, res: Response, next: NextFunction) => {
-    const header = req.headers.authorization;
-    if (header?.startsWith("Bearer ")) {
+    const token = req.cookies?.access_token;
+    if (token) {
       try {
-        const payload = TokenService.verify(header.slice(7));
+        const payload = TokenService.verify(token);
         const user = await this.userRepository.findAuthSnapshotById(payload.id);
         if (user && !user.disabled) {
           req.user = { id: user.id, role: user.role };

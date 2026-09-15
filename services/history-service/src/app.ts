@@ -1,5 +1,8 @@
 import express, { type Express } from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+import helmet from "helmet";
+import { createRateLimiter } from "@mini-tube/security-middleware";
 import historyRoutes from "./routes/history.routes.js";
 import savedRoutes from "./routes/saved.routes.js";
 import { errorHandlerMiddleware } from "./middleware/errorHandler.js";
@@ -14,7 +17,10 @@ class App {
   }
 
   private initializeMiddleware() {
-    this.app.use(cors({ origin: process.env.CLIENT_URL }));
+    this.app.use(helmet());
+    this.app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+    this.app.use(createRateLimiter());
+    this.app.use(cookieParser());
     this.app.use(express.json());
   }
 

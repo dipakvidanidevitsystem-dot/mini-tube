@@ -15,7 +15,7 @@ graph TB
 
     subgraph Auth["auth-service :5011"]
         AuthRoutes["/api/auth/*"]
-        AuthDB[("users (credentials)<br/>passwordResets")]
+        AuthDB[("users (credentials)<br/>passwordResets, refreshTokens")]
     end
 
     subgraph Video["video-service :5013"]

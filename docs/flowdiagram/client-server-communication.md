@@ -6,6 +6,8 @@
 
 The gateway exists and is fully verified (see [`services-overview.md`](./services-overview.md)), but the React client has **not** been cut over to it yet. `client/src/store/api/baseApi.ts` still calls `VITE_API_URL` directly against the monolith on port 5001, which forwards each request to the right service internally the same way the gateway would — the client just isn't going through the gateway itself.
 
+Auth itself has been cut over already, independent of the gateway question: the JWT lives in an **httpOnly, `SameSite=Lax` cookie** set by auth-service (`access_token`, 15 min; `refresh_token`, 30 days, scoped to `/api/auth`) instead of in `localStorage`. Every request goes out with `credentials: "include"` and the cookie rides along automatically; there is no `Authorization` header anymore. See [`services/auth-service/src/controllers/auth.controller.ts`](../../services/auth-service/src/controllers/auth.controller.ts) and [`shared/auth-middleware/src/index.ts`](../../shared/auth-middleware/src/index.ts).
+
 Source: [`client/src/store/api/baseApi.ts`](../../client/src/store/api/baseApi.ts), [`client/src/store/socket.ts`](../../client/src/store/socket.ts)
 
 ```mermaid
@@ -14,8 +16,8 @@ graph LR
     Monolith["monolith / server<br/>:5001 (VITE_API_URL)"]
     Notification["notification-service<br/>:5017 (VITE_WS_URL)"]
 
-    Client -->|"REST — bearer token<br/>from localStorage"| Monolith
-    Client -.->|"Socket.IO — direct,<br/>JWT in handshake auth.token"| Notification
+    Client -->|"REST — access_token<br/>httpOnly cookie"| Monolith
+    Client -.->|"Socket.IO — direct,<br/>access_token cookie on handshake"| Notification
 
     Monolith -.->|"internally forwards<br/>to owning service"| Services["auth / video / comment /<br/>history / user / admin services"]
 ```
@@ -28,9 +30,14 @@ sequenceDiagram
     participant M as monolith :5001
     participant S as owning service
 
-    C->>M: fetch(VITE_API_URL + "/videos/123")<br/>Authorization: Bearer <token>
+    C->>M: fetch(VITE_API_URL + "/videos/123", { credentials: "include" })<br/>Cookie: access_token=...
     Note over M: monolith still hosts the full<br/>route surface for the client today
     M-->>C: JSON response
+    alt access token expired (401)
+        C->>M: POST /auth/refresh<br/>Cookie: refresh_token=...
+        M-->>C: new Set-Cookie: access_token, refresh_token (rotated)
+        C->>M: retry original request once
+    end
 ```
 
 ### Socket.IO flow (current — independent of REST path)
@@ -40,7 +47,7 @@ sequenceDiagram
     participant C as Client
     participant N as notification-service :5017
 
-    C->>N: io(VITE_WS_URL, { auth: { token } })
+    C->>N: io(VITE_WS_URL, { withCredentials: true })<br/>Cookie: access_token=... (handshake request)
     N->>N: verify JWT signature (stateless,<br/>no DB lookup)
     N->>N: socket.join("user:{id}")
     C->>N: emit("join-video", videoId)
