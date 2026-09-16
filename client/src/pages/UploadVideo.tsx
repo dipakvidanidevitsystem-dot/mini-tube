@@ -15,12 +15,11 @@ import { uploadWithProgress } from "../lib/uploadWithProgress";
 import { CATEGORIES } from "../constants";
 import { notifySuccess } from "../lib/toast";
 import type { Video, Visibility } from "../types";
+import { DESCRIPTION_MAX, TITLE_MAX, validateMaxLength, validateRequired } from "../lib/validation";
 
 type UploadPhase = "idle" | "uploading" | "done";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
-const TITLE_MAX = 100;
-const DESCRIPTION_MAX = 5000;
 
 export default function UploadVideo() {
   const navigate = useNavigate();
@@ -33,6 +32,7 @@ export default function UploadVideo() {
   const [video, setVideo] = useState<File | null>(null);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [error, setError] = useState("");
+  const [titleError, setTitleError] = useState("");
 
   const [phase, setPhase] = useState<UploadPhase>("idle");
   const [progress, setProgress] = useState(0);
@@ -54,6 +54,11 @@ export default function UploadVideo() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    const nextTitleError = validateRequired(title, "Title") || validateMaxLength(title, TITLE_MAX, "Title");
+    setTitleError(nextTitleError || "");
+    if (nextTitleError) return;
+
     if (!video) {
       setError("Please select a video file.");
       return;
@@ -99,7 +104,7 @@ export default function UploadVideo() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-lg desktop:grid-cols-5">
+      <form onSubmit={handleSubmit} noValidate className="grid grid-cols-1 gap-lg desktop:grid-cols-5">
         <div className="flex flex-col gap-lg desktop:col-span-3">
           <MediaDropzone
             kind="video"
@@ -141,11 +146,11 @@ export default function UploadVideo() {
               label="Title"
               value={title}
               onChange={(e) => setTitle(e.target.value.slice(0, TITLE_MAX))}
-              required
+              onBlur={() => setTitleError(validateRequired(title, "Title") || validateMaxLength(title, TITLE_MAX, "Title") || "")}
+              error={!!titleError}
               disabled={submitting}
-              inputProps={{ maxLength: TITLE_MAX }}
-              helperText={`${title.length}/${TITLE_MAX}`}
-              FormHelperTextProps={{ className: "!text-right" }}
+              helperText={titleError || `${title.length}/${TITLE_MAX}`}
+              FormHelperTextProps={{ className: titleError ? undefined : "!text-right" }}
             />
             <TextField
               label="Description"
@@ -154,7 +159,6 @@ export default function UploadVideo() {
               multiline
               minRows={3}
               disabled={submitting}
-              inputProps={{ maxLength: DESCRIPTION_MAX }}
               helperText={`${description.length}/${DESCRIPTION_MAX}`}
               FormHelperTextProps={{ className: "!text-right" }}
             />

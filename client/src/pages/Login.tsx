@@ -5,6 +5,7 @@ import Button from "../components/Button";
 import { useLoginMutation } from "../store/api/authApi";
 import { getRtkErrorMessage } from "../store/lib/getRtkErrorMessage";
 import PasswordField from "../components/PasswordField";
+import { validateEmail, validateRequired } from "../lib/validation";
 
 export default function Login() {
   const [login, { isLoading: submitting }] = useLoginMutation();
@@ -12,10 +13,19 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
+
+    const nextEmailError = validateEmail(email);
+    const nextPasswordError = validateRequired(password, "Password");
+    setEmailError(nextEmailError || "");
+    setPasswordError(nextPasswordError || "");
+    if (nextEmailError || nextPasswordError) return;
+
     try {
       await login({ email, password }).unwrap();
       navigate("/");
@@ -27,20 +37,25 @@ export default function Login() {
   return (
     <div className="mx-auto mt-16 max-w-sm">
       <h1 className="mb-6 text-2xl font-semibold">Log in</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <TextField
           label="Email"
-          type="email"
+          type="text"
+          inputMode="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
+          onBlur={() => setEmailError(validateEmail(email) || "")}
+          error={!!emailError}
+          helperText={emailError}
           disabled={submitting}
         />
         <PasswordField
           label="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
+          onBlur={() => setPasswordError(validateRequired(password, "Password") || "")}
+          error={!!passwordError}
+          helperText={passwordError}
           disabled={submitting}
         />
         {error && <p className="text-sm font-medium text-foreground dark:text-foreground-dark">{error}</p>}

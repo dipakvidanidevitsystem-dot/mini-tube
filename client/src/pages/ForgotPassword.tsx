@@ -4,16 +4,23 @@ import TextField from "../components/TextField";
 import Button from "../components/Button";
 import { useForgotPasswordMutation } from "../store/api/authApi";
 import { getRtkErrorMessage } from "../store/lib/getRtkErrorMessage";
+import { validateEmail } from "../lib/validation";
 
 export default function ForgotPassword() {
   const [forgotPassword, { isLoading: submitting }] = useForgotPasswordMutation();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
+
+    const nextEmailError = validateEmail(email);
+    setEmailError(nextEmailError || "");
+    if (nextEmailError) return;
+
     try {
       const result = await forgotPassword({ email }).unwrap();
       setMessage(result.message);
@@ -29,13 +36,16 @@ export default function ForgotPassword() {
       {message ? (
         <p className="text-sm text-foreground dark:text-foreground-dark">{message}</p>
       ) : (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
           <TextField
             label="Email"
-            type="email"
+            type="text"
+            inputMode="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
+            onBlur={() => setEmailError(validateEmail(email) || "")}
+            error={!!emailError}
+            helperText={emailError}
             disabled={submitting}
           />
           {error && <p className="text-sm font-medium text-foreground dark:text-foreground-dark">{error}</p>}

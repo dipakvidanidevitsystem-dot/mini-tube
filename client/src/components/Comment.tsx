@@ -8,6 +8,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { Trash, ThumbsUp, DotsThreeVertical } from "@phosphor-icons/react";
 import type { Comment as CommentType } from "../types";
 import { useAppSelector } from "../store/hooks";
+import { COMMENT_MAX, validateMaxLength, validateRequired } from "../lib/validation";
 
 interface Props {
   comment: CommentType;
@@ -77,15 +78,21 @@ export default function Comment({ comment, replies, onDelete, onToggleLike, onRe
   const isOwner = user?.id === comment.userId;
   const [replying, setReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
+  const [replyTextError, setReplyTextError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleReplySubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!replyText.trim()) return;
+    const nextReplyTextError =
+      validateRequired(replyText, "Reply") || validateMaxLength(replyText, COMMENT_MAX, "Reply");
+    setReplyTextError(nextReplyTextError || "");
+    if (nextReplyTextError) return;
+
     setSubmitting(true);
     try {
       await onReply(comment.id, replyText.trim());
       setReplyText("");
+      setReplyTextError("");
       setReplying(false);
     } finally {
       setSubmitting(false);
@@ -104,16 +111,18 @@ export default function Comment({ comment, replies, onDelete, onToggleLike, onRe
       />
 
       {replying && (
-        <form onSubmit={handleReplySubmit} className="ml-11 mt-2 flex items-start gap-2">
+        <form onSubmit={handleReplySubmit} noValidate className="ml-11 mt-2 flex items-start gap-2">
           <TextField
             size="small"
             fullWidth
             placeholder="Write a reply..."
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
+            error={!!replyTextError}
+            helperText={replyTextError}
             disabled={submitting}
           />
-          <Button type="submit" size="small" variant="contained" disabled={submitting || !replyText.trim()}>
+          <Button type="submit" size="small" variant="contained" disabled={submitting}>
             Post
           </Button>
         </form>

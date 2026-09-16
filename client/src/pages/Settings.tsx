@@ -14,6 +14,7 @@ import { useAppSelector } from "../store/hooks";
 import { notifyApiError, notifySuccess } from "../lib/toast";
 import PasswordField from "../components/PasswordField";
 import type { NotificationPreferences } from "../types";
+import { NAME_MAX, validateMatch, validateMaxLength, validatePassword, validateRequired } from "../lib/validation";
 
 const NOTIFICATION_OPTIONS: { key: keyof NotificationPreferences; label: string; description: string }[] = [
   {
@@ -75,11 +76,17 @@ export default function Settings() {
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [profileError, setProfileError] = useState("");
+  const [nameError, setNameError] = useState("");
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [currentPasswordError, setCurrentPasswordError] = useState("");
+  const [newPasswordError, setNewPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
+  const validateName = (value: string) => validateRequired(value, "Name") || validateMaxLength(value, NAME_MAX, "Name");
 
   useEffect(() => {
     if (!avatar) {
@@ -115,6 +122,11 @@ export default function Settings() {
   const handleProfileSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setProfileError("");
+
+    const nextNameError = validateName(name);
+    setNameError(nextNameError || "");
+    if (nextNameError) return;
+
     try {
       await updateProfile({
         name: name.trim() !== user.name ? name.trim() : undefined,
@@ -129,10 +141,15 @@ export default function Settings() {
 
   const handlePasswordSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      setPasswordError("New password and confirmation do not match.");
-      return;
-    }
+
+    const nextCurrentPasswordError = validateRequired(currentPassword, "Current password");
+    const nextNewPasswordError = validatePassword(newPassword);
+    const nextConfirmPasswordError = validateMatch(confirmPassword, newPassword, "New password and confirmation");
+    setCurrentPasswordError(nextCurrentPasswordError || "");
+    setNewPasswordError(nextNewPasswordError || "");
+    setConfirmPasswordError(nextConfirmPasswordError || "");
+    if (nextCurrentPasswordError || nextNewPasswordError || nextConfirmPasswordError) return;
+
     setPasswordError("");
     try {
       await changePassword({ currentPassword, newPassword }).unwrap();
@@ -160,7 +177,7 @@ export default function Settings() {
           title="Profile"
           description="Update your photo and display name"
         >
-          <form onSubmit={handleProfileSubmit} className="flex flex-col gap-md">
+          <form onSubmit={handleProfileSubmit} noValidate className="flex flex-col gap-md">
             <div className="flex items-center gap-md">
               <div className="group relative shrink-0">
                 <Avatar
@@ -208,6 +225,9 @@ export default function Settings() {
               label="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onBlur={() => setNameError(validateName(name) || "")}
+              error={!!nameError}
+              helperText={nameError}
               disabled={profileSubmitting}
               fullWidth
             />
@@ -227,12 +247,14 @@ export default function Settings() {
           title="Change password"
           description="Choose a strong password you don't use elsewhere"
         >
-          <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-md">
+          <form onSubmit={handlePasswordSubmit} noValidate className="flex flex-col gap-md">
             <PasswordField
               label="Current password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              required
+              onBlur={() => setCurrentPasswordError(validateRequired(currentPassword, "Current password") || "")}
+              error={!!currentPasswordError}
+              helperText={currentPasswordError}
               disabled={passwordSubmitting}
               fullWidth
             />
@@ -240,7 +262,9 @@ export default function Settings() {
               label="New password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              required
+              onBlur={() => setNewPasswordError(validatePassword(newPassword) || "")}
+              error={!!newPasswordError}
+              helperText={newPasswordError}
               disabled={passwordSubmitting}
               fullWidth
             />
@@ -248,7 +272,11 @@ export default function Settings() {
               label="Confirm new password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              required
+              onBlur={() =>
+                setConfirmPasswordError(validateMatch(confirmPassword, newPassword, "New password and confirmation") || "")
+              }
+              error={!!confirmPasswordError}
+              helperText={confirmPasswordError}
               disabled={passwordSubmitting}
               fullWidth
             />

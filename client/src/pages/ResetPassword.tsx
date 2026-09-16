@@ -4,6 +4,7 @@ import Button from "../components/Button";
 import { useResetPasswordMutation } from "../store/api/authApi";
 import { getRtkErrorMessage } from "../store/lib/getRtkErrorMessage";
 import PasswordField from "../components/PasswordField";
+import { validateMatch, validatePassword } from "../lib/validation";
 
 export default function ResetPassword() {
   const { token } = useParams<{ token: string }>();
@@ -12,14 +13,19 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!token) return;
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
+
+    const nextPasswordError = validatePassword(password);
+    const nextConfirmPasswordError = validateMatch(confirmPassword, password, "Passwords");
+    setPasswordError(nextPasswordError || "");
+    setConfirmPasswordError(nextConfirmPasswordError || "");
+    if (nextPasswordError || nextConfirmPasswordError) return;
+
     setError("");
     try {
       await resetPassword({ token, password }).unwrap();
@@ -32,19 +38,23 @@ export default function ResetPassword() {
   return (
     <div className="mx-auto mt-16 max-w-sm">
       <h1 className="mb-6 text-2xl font-semibold">Reset password</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <PasswordField
           label="New password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
+          onBlur={() => setPasswordError(validatePassword(password) || "")}
+          error={!!passwordError}
+          helperText={passwordError}
           disabled={submitting}
         />
         <PasswordField
           label="Confirm password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          required
+          onBlur={() => setConfirmPasswordError(validateMatch(confirmPassword, password, "Passwords") || "")}
+          error={!!confirmPasswordError}
+          helperText={confirmPasswordError}
           disabled={submitting}
         />
         {error && <p className="text-sm font-medium text-foreground dark:text-foreground-dark">{error}</p>}

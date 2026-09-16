@@ -15,6 +15,7 @@ import Comment from "./Comment";
 import Loading from "./Loading";
 import EmptyState from "./EmptyState";
 import ErrorState from "./ErrorState";
+import { COMMENT_MAX, validateMaxLength, validateRequired } from "../lib/validation";
 
 export default function CommentList({ videoId }: { videoId: string | number }) {
   const user = useAppSelector((state) => state.auth.user);
@@ -24,6 +25,7 @@ export default function CommentList({ videoId }: { videoId: string | number }) {
   const [toggleCommentLike] = useToggleCommentLikeMutation();
   const [text, setText] = useState("");
   const [error, setError] = useState("");
+  const [textError, setTextError] = useState("");
 
   const { topLevel, repliesByParent } = useMemo(() => {
     const top: CommentType[] = [];
@@ -42,11 +44,15 @@ export default function CommentList({ videoId }: { videoId: string | number }) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!text.trim()) return;
+    const nextTextError = validateRequired(text, "Comment") || validateMaxLength(text, COMMENT_MAX, "Comment");
+    setTextError(nextTextError || "");
+    if (nextTextError) return;
+
     setError("");
     try {
       await addComment({ videoId, comment: text.trim() }).unwrap();
       setText("");
+      setTextError("");
       notifySuccess("Comment added.");
     } catch (err) {
       setError(getRtkErrorMessage(err));
@@ -82,16 +88,18 @@ export default function CommentList({ videoId }: { videoId: string | number }) {
       <h2 className="font-medium mb-3">Comments ({comments.length})</h2>
 
       {user && (
-        <form onSubmit={handleSubmit} className="flex items-start gap-2 mb-4">
+        <form onSubmit={handleSubmit} noValidate className="flex items-start gap-2 mb-4">
           <TextField
             size="small"
             fullWidth
             placeholder="Add a comment..."
             value={text}
             onChange={(e) => setText(e.target.value)}
+            error={!!textError}
+            helperText={textError}
             disabled={submitting}
           />
-          <Button type="submit" variant="contained" disabled={submitting || !text.trim()}>
+          <Button type="submit" variant="contained" disabled={submitting}>
             Post
           </Button>
         </form>

@@ -11,6 +11,7 @@ import Loading from "../components/Loading";
 import ErrorState from "../components/ErrorState";
 import MediaDropzone from "../components/MediaDropzone";
 import type { Visibility } from "../types";
+import { DESCRIPTION_MAX, TITLE_MAX, validateMaxLength, validateRequired } from "../lib/validation";
 
 export default function EditVideo() {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +25,7 @@ export default function EditVideo() {
   const [visibility, setVisibility] = useState<Visibility>("public");
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [error, setError] = useState("");
+  const [titleError, setTitleError] = useState("");
 
   useEffect(() => {
     if (!video) return;
@@ -36,6 +38,11 @@ export default function EditVideo() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!id) return;
+
+    const nextTitleError = validateRequired(title, "Title") || validateMaxLength(title, TITLE_MAX, "Title");
+    setTitleError(nextTitleError || "");
+    if (nextTitleError) return;
+
     setError("");
     try {
       await updateVideo({
@@ -62,18 +69,20 @@ export default function EditVideo() {
   return (
     <div className="mx-auto mt-8 max-w-lg p-4">
       <h1 className="mb-6 text-2xl font-semibold">Edit video</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <TextField
           label="Title"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
+          onChange={(e) => setTitle(e.target.value.slice(0, TITLE_MAX))}
+          onBlur={() => setTitleError(validateRequired(title, "Title") || validateMaxLength(title, TITLE_MAX, "Title") || "")}
+          error={!!titleError}
+          helperText={titleError}
           disabled={submitting}
         />
         <TextField
           label="Description"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => setDescription(e.target.value.slice(0, DESCRIPTION_MAX))}
           multiline
           minRows={3}
           disabled={submitting}
