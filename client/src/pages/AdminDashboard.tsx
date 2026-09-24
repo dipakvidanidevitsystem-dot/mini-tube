@@ -316,7 +316,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-[calc(100vh-93px)] bg-background dark:bg-background-dark">
-      <div className="mx-auto grid w-full max-w-[1400px] desktop:grid-cols-[220px_minmax(0,1fr)]">
+      <div className="grid w-full w-full px-4 md:px-8 lg:px-12 desktop:grid-cols-[220px_minmax(0,1fr)]">
         <aside className="sticky top-[93px] hidden h-[calc(100vh-93px)] border-r border-border bg-card desktop:block dark:border-border-dark dark:bg-card-dark">
           {navigation}
         </aside>

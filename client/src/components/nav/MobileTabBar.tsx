@@ -47,7 +47,7 @@ export default function MobileTabBar() {
     pathname === `/channel/${user.id}`;
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-stretch justify-around border-t border-border bg-card pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_8px_-2px_rgba(0,0,0,0.08)] md:hidden dark:border-border-dark dark:bg-card-dark dark:shadow-[0_-2px_8px_-2px_rgba(0,0,0,0.3)]">
+    <nav className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-stretch justify-around border-t border-border bg-background/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_8px_-2px_rgba(0,0,0,0.08)] md:hidden dark:border-border-dark dark:bg-background-dark/95">
       <TabLink to="/" label="Browse" icon={<House size={22} weight={pathname === "/" ? "fill" : "regular"} />} active={pathname === "/"} />
       <TabLink
         to="/my-videos"
