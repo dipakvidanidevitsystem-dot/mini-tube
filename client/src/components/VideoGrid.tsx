@@ -1,6 +1,7 @@
 import type { Video } from "../types";
 import VideoCard from "./VideoCard";
 import EmptyState from "./EmptyState";
+import { VIDEO_GRID_CLASS } from "./VideoCardSkeleton";
 
 export default function VideoGrid({
   videos,
@@ -18,10 +19,13 @@ export default function VideoGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-lg sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-      {videos.map((video) => (
-        <VideoCard key={video.id} video={video} showAvatar={showAvatar} showCreatorName={showCreatorName} />
+    <ul className={VIDEO_GRID_CLASS}>
+      {videos.map((video, i) => (
+        // Short 30ms stagger on the first rows only; disabled under reduced motion by the global reset.
+        <li key={video.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 11) * 30}ms` }}>
+          <VideoCard video={video} showAvatar={showAvatar} showCreatorName={showCreatorName} />
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

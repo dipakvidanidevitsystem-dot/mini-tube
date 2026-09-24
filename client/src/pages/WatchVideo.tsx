@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Button from "../components/Button";
-import IconButton from "@mui/material/IconButton";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -10,12 +9,16 @@ import TextField from "../components/TextField";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Avatar from "@mui/material/Avatar";
-import { ThumbsUp, BookmarkSimple, ShareNetwork, Flag, DotsThreeVertical } from "@phosphor-icons/react";
+import Skeleton from "@mui/material/Skeleton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import { ThumbsUp, BookmarkSimple, ShareNetwork, Flag, DotsThree, Bell, Check } from "@phosphor-icons/react";
 import {
   useGetVideoQuery,
   useToggleLikeMutation,
   useReportVideoMutation,
   useReportWatchProgressMutation,
+  useListVideosQuery,
   videosApi,
 } from "../store/api/videosApi";
 import { commentsApi } from "../store/api/commentsApi";
@@ -24,14 +27,15 @@ import { useRecordViewMutation } from "../store/api/historyApi";
 import { useListSavedQuery, useToggleSavedMutation } from "../store/api/savedApi";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { notifyApiError, notifySuccess } from "../lib/toast";
-import { formatDate } from "../lib/format";
+import { formatCompact, formatDate } from "../lib/format";
+import dayjs from "../lib/dayjs";
 import { getSocket } from "../store/socket";
 import VideoPlayer from "../components/VideoPlayer";
 import CommentList from "../components/CommentList";
-import Loading from "../components/Loading";
 import ErrorState from "../components/ErrorState";
 import { VideoProcessingPanel, VideoFailedPanel } from "../components/VideoProcessingPanel";
 import type { Comment } from "../types";
+import UpNextList from "../components/UpNextList";
 
 export default function WatchVideo() {
   const { id } = useParams<{ id: string }>();
@@ -46,6 +50,13 @@ export default function WatchVideo() {
   const { data: channel } = useGetChannelQuery(video?.userId ?? 0, { skip: !video });
   const { data: savedRows } = useListSavedQuery(undefined, { skip: !user });
   const saved = !!savedRows?.some((v) => String(v.id) === String(id));
+  const { data: related, isLoading: relatedLoading } = useListVideosQuery(
+    { category: video?.category || undefined, sort: "latest", page: 1 },
+    { skip: !video }
+  );
+  const upNext = (related?.items ?? [])
+    .filter((v) => String(v.id) !== String(id) && v.processingStatus === "ready")
+    .slice(0, 12);
 
   const [toggleLike] = useToggleLikeMutation();
   const [toggleSaved] = useToggleSavedMutation();
@@ -220,7 +231,26 @@ export default function WatchVideo() {
     }
   };
 
-  if (videoLoading) return <Loading />;
+  if (videoLoading) {
+    return (
+      <div
+        className="mx-auto grid w-full max-w-[1760px] gap-lg px-0 py-md sm:px-md lg:grid-cols-[minmax(0,1fr)_380px] lg:px-lg"
+        aria-busy
+      >
+        <div>
+          <Skeleton variant="rounded" className="!aspect-video !h-auto w-full sm:!rounded-lg" />
+          <div className="px-md sm:px-0">
+            <Skeleton variant="text" width="70%" sx={{ fontSize: "24px", mt: 2 }} />
+            <div className="mt-sm flex items-center gap-sm">
+              <Skeleton variant="circular" width={40} height={40} />
+              <Skeleton variant="text" width={160} />
+            </div>
+          </div>
+        </div>
+        <UpNextList videos={[]} loading />
+      </div>
+    );
+  }
 
   if (isError) {
     return (
@@ -233,150 +263,209 @@ export default function WatchVideo() {
 
   if (!video) return null;
 
+  const ready = video.processingStatus === "ready";
+  const pill =
+    "inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-muted px-4 text-button-utility text-foreground transition-colors duration-fast hover:bg-foreground/10 active:scale-[0.97] disabled:opacity-50";
+
   return (
-    <div className="mx-auto max-w-4xl py-md">
-      <div className="px-0 sm:px-md">
-        {video.processingStatus === "pending" && <VideoProcessingPanel thumbnailUrl={video.thumbnailUrl} />}
-        {video.processingStatus === "failed" && (
-          <VideoFailedPanel message={video.processingError} onRetry={refetch} />
-        )}
-        {video.processingStatus === "ready" && (
-          <VideoPlayer
-            src={video.videoUrl}
-            poster={video.thumbnailUrl}
-            onProgress={handleProgress}
-            onUnload={handleUnload}
-          />
-        )}
-      </div>
+    <div className="mx-auto grid w-full max-w-[1760px] gap-x-lg gap-y-xl px-0 pb-16 pt-0 sm:px-md sm:pt-md lg:grid-cols-[minmax(0,1fr)_380px] lg:px-lg">
+      <div className="min-w-0">
+        <div className="sm:overflow-hidden sm:rounded-lg">
+          {video.processingStatus === "pending" && <VideoProcessingPanel thumbnailUrl={video.thumbnailUrl} />}
+          {video.processingStatus === "failed" && <VideoFailedPanel message={video.processingError} onRetry={refetch} />}
+          {ready && (
+            <VideoPlayer src={video.videoUrl} poster={video.thumbnailUrl} onProgress={handleProgress} onUnload={handleUnload} />
+          )}
+        </div>
 
-      <div className="px-md">
-        <h1 className="mt-md text-tagline">{video.title}</h1>
+        <div className="px-md sm:px-0">
+          <h1 className="mt-md text-lead text-foreground [overflow-wrap:anywhere]">{video.title}</h1>
 
-        {video.processingStatus !== "ready" && (
-          <p className="mt-1 text-sm text-muted-foreground dark:text-muted-foreground-dark">
-            {video.processingStatus === "pending"
-              ? "Likes, comments and sharing will unlock once processing finishes."
-              : "This video couldn't be processed."}
-          </p>
-        )}
-
-        {video.processingStatus === "ready" && (
-          <>
-            <p className="mt-xxs text-caption text-muted-foreground dark:text-muted-foreground-dark">
-              {video.views.toLocaleString()} views · {formatDate(video.createdAt)}
+          {!ready && (
+            <p className="mt-1 text-caption text-muted-foreground">
+              {video.processingStatus === "pending"
+                ? "Likes, comments and sharing will unlock once processing finishes."
+                : "This video couldn't be processed."}
             </p>
+          )}
 
-            <div className="mt-sm flex items-center gap-xs">
-              {user && (
-                <Button
-                  startIcon={<ThumbsUp size={18} weight={video.isLiked ? "fill" : "regular"} />}
-                  color={video.isLiked ? "primary" : "inherit"}
-                  onClick={handleLike}
-                >
-                  {video.likeCount}
-                </Button>
-              )}
-              {user && (
-                <Button
-                  startIcon={<BookmarkSimple size={18} weight={saved ? "fill" : "regular"} />}
-                  color={saved ? "primary" : "inherit"}
-                  onClick={handleToggleSaved}
-                >
-                  Save
-                </Button>
-              )}
-              <Button startIcon={<ShareNetwork size={18} />} color="inherit" onClick={handleShare}>
-                Share
-              </Button>
-              {user && (
-                <>
-                  <IconButton aria-label="more options" onClick={(e) => setMoreAnchorEl(e.currentTarget)}>
-                    <DotsThreeVertical size={20} weight="bold" />
-                  </IconButton>
-                  <Menu anchorEl={moreAnchorEl} open={!!moreAnchorEl} onClose={() => setMoreAnchorEl(null)}>
-                    <MenuItem
-                      onClick={() => {
-                        setMoreAnchorEl(null);
-                        setReportOpen(true);
-                      }}
-                    >
-                      <Flag size={18} style={{ marginRight: 8 }} /> Report
-                    </MenuItem>
-                  </Menu>
-                </>
-              )}
-            </div>
-
-            {channel && (
-              <div className="mt-md flex items-center justify-between border-y border-border py-sm dark:border-border-dark">
-                <Link to={`/channel/${channel.id}`} className="flex min-w-0 items-center gap-sm">
-                  <Avatar src={channel.profileImage || undefined} sx={{ width: 40, height: 40 }}>
-                    {channel.name?.[0]?.toUpperCase()}
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="truncate text-caption-strong">{channel.name}</p>
-                    <p className="text-caption text-muted-foreground dark:text-muted-foreground-dark">
-                      {channel.subscriberCount.toLocaleString()} subscribers
-                    </p>
+          {ready && (
+            <>
+              <div className="mt-sm flex flex-col gap-sm md:flex-row md:items-center md:justify-between">
+                {channel && (
+                  <div className="flex min-w-0 items-center gap-sm">
+                    <Link to={`/channel/${channel.id}`} className="flex min-w-0 items-center gap-sm rounded-md">
+                      <Avatar src={channel.profileImage || undefined} alt="" sx={{ width: 42, height: 42 }}>
+                        {channel.name?.[0]?.toUpperCase()}
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-body-strong text-foreground hover:text-accent">{channel.name}</p>
+                        <p className="tabular text-fine-print text-muted-foreground">
+                          {formatCompact(channel.subscriberCount)}{" "}
+                          {channel.subscriberCount === 1 ? "subscriber" : "subscribers"}
+                        </p>
+                      </div>
+                    </Link>
+                    {user && user.id !== channel.id && (
+                      <Button
+                        variant={channel.isSubscribed ? "outlined" : "contained"}
+                        onClick={handleSubscribe}
+                        startIcon={channel.isSubscribed ? <Check size={16} weight="bold" /> : <Bell size={16} />}
+                        aria-pressed={channel.isSubscribed}
+                        className="!ml-xs !rounded-full"
+                      >
+                        {channel.isSubscribed ? "Subscribed" : "Subscribe"}
+                      </Button>
+                    )}
                   </div>
-                </Link>
-                {user && user.id !== channel.id && (
-                  <Button
-                    variant={channel.isSubscribed ? "outlined" : "contained"}
-                    onClick={handleSubscribe}
-                  >
-                    {channel.isSubscribed ? "Subscribed" : "Subscribe"}
-                  </Button>
                 )}
-              </div>
-            )}
 
-            {video.description && (
-              <div className="mt-md">
-                <p className="text-caption-strong">Description</p>
-                <p
-                  ref={descRef}
-                  className={`mt-xxs whitespace-pre-line text-caption text-foreground dark:text-foreground-dark ${
-                    descExpanded ? "" : "line-clamp-3"
-                  }`}
-                >
-                  {video.description}
-                </p>
-                {canExpandDesc && (
-                  <button
-                    type="button"
-                    onClick={() => setDescExpanded((v) => !v)}
-                    className="mt-xs text-caption-strong text-muted-foreground hover:text-foreground dark:text-muted-foreground-dark dark:hover:text-foreground-dark"
-                  >
-                    {descExpanded ? "Show less" : "Show more"}
+                <div className="scrollbar-none -mx-md flex items-center gap-xs overflow-x-auto px-md md:mx-0 md:px-0">
+                  {user && (
+                    <button
+                      type="button"
+                      onClick={handleLike}
+                      aria-pressed={video.isLiked}
+                      aria-label={`${video.isLiked ? "Unlike" : "Like"} this video, ${video.likeCount.toLocaleString()} likes`}
+                      className={`${pill} ${video.isLiked ? "!bg-accent-soft !text-accent" : ""}`}
+                    >
+                      <ThumbsUp size={18} weight={video.isLiked ? "fill" : "regular"} aria-hidden />
+                      <span className="tabular">{formatCompact(video.likeCount)}</span>
+                    </button>
+                  )}
+                  {user && (
+                    <button
+                      type="button"
+                      onClick={handleToggleSaved}
+                      aria-pressed={saved}
+                      className={`${pill} ${saved ? "!bg-accent-soft !text-accent" : ""}`}
+                    >
+                      <BookmarkSimple size={18} weight={saved ? "fill" : "regular"} aria-hidden />
+                      {saved ? "Saved" : "Save"}
+                    </button>
+                  )}
+                  <button type="button" onClick={handleShare} className={pill}>
+                    <ShareNetwork size={18} aria-hidden />
+                    Share
                   </button>
+                  {user && (
+                    <>
+                      <button
+                        type="button"
+                        aria-label="More actions"
+                        aria-haspopup="menu"
+                        aria-expanded={!!moreAnchorEl}
+                        onClick={(e) => setMoreAnchorEl(e.currentTarget)}
+                        className={`${pill} !w-10 !justify-center !px-0`}
+                      >
+                        <DotsThree size={20} weight="bold" aria-hidden />
+                      </button>
+                      <Menu
+                        anchorEl={moreAnchorEl}
+                        open={!!moreAnchorEl}
+                        onClose={() => setMoreAnchorEl(null)}
+                        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                        transformOrigin={{ vertical: "top", horizontal: "right" }}
+                      >
+                        <MenuItem
+                          onClick={() => {
+                            setMoreAnchorEl(null);
+                            setReportOpen(true);
+                          }}
+                        >
+                          <ListItemIcon className="!min-w-0 !text-muted-foreground">
+                            <Flag size={18} />
+                          </ListItemIcon>
+                          <ListItemText>Report</ListItemText>
+                        </MenuItem>
+                      </Menu>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-md rounded-lg bg-muted/70 p-sm sm:p-md">
+                <p className="tabular flex flex-wrap items-center gap-x-1.5 text-caption-strong text-foreground">
+                  <span>{video.views.toLocaleString()} views</span>
+                  <span className="text-muted-foreground" aria-hidden>
+                    ·
+                  </span>
+                  <time dateTime={video.createdAt} title={formatDate(video.createdAt)}>
+                    {dayjs(video.createdAt).fromNow()}
+                  </time>
+                  {video.category && (
+                    <span className="ml-1 inline-flex rounded-sm bg-accent-soft px-1.5 py-0.5 text-fine-print font-semibold text-accent">
+                      {video.category}
+                    </span>
+                  )}
+                </p>
+                {video.description ? (
+                  <>
+                    <p
+                      ref={descRef}
+                      id="video-description"
+                      className={`mt-xs whitespace-pre-line text-caption text-foreground [overflow-wrap:anywhere] ${
+                        descExpanded ? "" : "line-clamp-3"
+                      }`}
+                    >
+                      {video.description}
+                    </p>
+                    {canExpandDesc && (
+                      <button
+                        type="button"
+                        onClick={() => setDescExpanded((v) => !v)}
+                        aria-expanded={descExpanded}
+                        aria-controls="video-description"
+                        className="mt-xs text-caption-strong text-foreground hover:text-accent"
+                      >
+                        {descExpanded ? "Show less" : "…more"}
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <p className="mt-xs text-caption text-muted-foreground">No description provided.</p>
                 )}
               </div>
-            )}
 
-            <div className="mt-lg">
-              <CommentList videoId={video.id} />
-            </div>
-          </>
+              <div className="mt-lg hidden lg:block">
+                <CommentList videoId={video.id} />
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="min-w-0 px-md sm:px-0">
+        <UpNextList videos={upNext} loading={relatedLoading} />
+        {ready && (
+          <div className="mt-xl lg:hidden">
+            <CommentList videoId={video.id} />
+          </div>
         )}
       </div>
 
-      <Dialog open={reportOpen} onClose={() => setReportOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Report this video</DialogTitle>
+      <Dialog open={reportOpen} onClose={() => !reportSubmitting && setReportOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle className="flex items-center gap-2">
+          <Flag size={20} className="text-destructive" aria-hidden />
+          Report this video
+        </DialogTitle>
         <DialogContent>
+          <p className="mb-sm text-caption text-muted-foreground">
+            Reports are reviewed by moderators. Tell us what is wrong so we can act quickly.
+          </p>
           <TextField
             autoFocus
             fullWidth
             multiline
             minRows={3}
-            placeholder="Tell us why you're reporting this video"
+            label="Reason"
+            placeholder="e.g. spam, misleading content, harassment…"
             value={reportReason}
             onChange={(e) => setReportReason(e.target.value)}
             disabled={reportSubmitting}
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
           <Button onClick={() => setReportOpen(false)} disabled={reportSubmitting}>
             Cancel
           </Button>
@@ -384,9 +473,10 @@ export default function WatchVideo() {
             variant="contained"
             color="error"
             onClick={handleReportSubmit}
-            disabled={reportSubmitting || !reportReason.trim()}
+            loading={reportSubmitting}
+            disabled={!reportReason.trim()}
           >
-            {reportSubmitting ? "Submitting..." : "Submit report"}
+            {reportSubmitting ? "Submitting…" : "Submit report"}
           </Button>
         </DialogActions>
       </Dialog>

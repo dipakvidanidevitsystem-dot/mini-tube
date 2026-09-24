@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
+import { FilmStrip, ImageSquare, UploadSimple, X, ArrowsClockwise, WarningCircle } from "@phosphor-icons/react";
 
 interface MediaDropzoneProps {
   kind: "video" | "image";
@@ -25,33 +26,6 @@ function formatFileSize(bytes: number): string {
   return `${value.toFixed(1)} ${units[unitIndex]}`;
 }
 
-function VideoIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="2.5" y="5" width="14" height="14" rx="3" />
-      <path d="M16.5 10.5 21 8v8l-4.5-2.5" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function ImageIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="2.5" y="4" width="19" height="16" rx="3" />
-      <circle cx="8.5" cy="10" r="1.75" />
-      <path d="M21.5 16.5 16 11l-4 4-2.5-2.5-4.5 4.5" strokeLinejoin="round" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 export default function MediaDropzone({
   kind,
   label,
@@ -66,6 +40,8 @@ export default function MediaDropzone({
 }: MediaDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const inputId = useId();
+  const errorId = useId();
+  const helpId = useId();
   const [isDragging, setIsDragging] = useState(false);
   const [localError, setLocalError] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -128,8 +104,8 @@ export default function MediaDropzone({
   };
 
   return (
-    <div className="flex flex-col gap-xxs">
-      <label htmlFor={inputId} className="text-caption-strong text-foreground dark:text-foreground-dark">
+    <div className="flex flex-col gap-xs">
+      <label htmlFor={inputId} className="text-caption-strong text-foreground">
         {label}
       </label>
 
@@ -144,29 +120,29 @@ export default function MediaDropzone({
       />
 
       {value ? (
-        <div className="flex items-center gap-sm rounded-lg border border-border bg-card p-sm dark:border-border-dark dark:bg-card-dark">
+        <div className="flex animate-fade-in items-center gap-sm rounded-lg border border-border bg-card p-sm">
           {kind === "image" && previewUrl ? (
             <img
               src={previewUrl}
               alt="Thumbnail preview"
-              className="h-14 w-24 shrink-0 rounded-md object-cover"
+              className="aspect-video h-16 shrink-0 rounded-md object-cover ring-1 ring-inset ring-border"
             />
           ) : kind === "video" && previewUrl ? (
             <video
               src={previewUrl}
               muted
               preload="metadata"
-              className="h-14 w-24 shrink-0 rounded-md bg-muted object-cover dark:bg-muted-dark"
+              className="aspect-video h-16 shrink-0 rounded-md bg-scrim object-cover"
             />
           ) : (
-            <div className="flex h-14 w-24 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground dark:bg-muted-dark dark:text-muted-foreground-dark">
-              <VideoIcon />
+            <div className="flex aspect-video h-16 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+              <FilmStrip size={24} aria-hidden />
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="truncate text-caption-strong text-foreground dark:text-foreground-dark">{value.name}</p>
-            <p className="text-fine-print text-muted-foreground dark:text-muted-foreground-dark">
-              {formatFileSize(value.size)}
+            <p className="truncate text-caption-strong text-foreground">{value.name}</p>
+            <p className="tabular text-fine-print text-muted-foreground">
+              {formatFileSize(value.size)} · {value.type || kind}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-xs">
@@ -174,8 +150,9 @@ export default function MediaDropzone({
               type="button"
               onClick={openPicker}
               disabled={disabled}
-              className="rounded-md px-xs py-xxs text-button-utility text-accent hover:bg-muted disabled:opacity-50 dark:hover:bg-muted-dark"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-button-utility text-accent transition-colors duration-fast hover:bg-accent-soft disabled:opacity-50"
             >
+              <ArrowsClockwise size={16} aria-hidden />
               Change
             </button>
             <button
@@ -183,9 +160,9 @@ export default function MediaDropzone({
               onClick={handleRemove}
               disabled={disabled}
               aria-label="Remove file"
-              className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-destructive disabled:opacity-50 dark:text-muted-foreground-dark dark:hover:bg-muted-dark dark:hover:text-destructive-dark"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors duration-fast hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
             >
-              <CloseIcon />
+              <X size={16} weight="bold" />
             </button>
           </div>
         </div>
@@ -194,6 +171,8 @@ export default function MediaDropzone({
           role="button"
           tabIndex={disabled ? -1 : 0}
           aria-label={`Upload ${label}`}
+          aria-describedby={[helperText ? helpId : "", error ? errorId : ""].filter(Boolean).join(" ") || undefined}
+          aria-invalid={!!error}
           onClick={openPicker}
           onKeyDown={handleKeyDown}
           onDragEnter={(e) => {
@@ -203,30 +182,57 @@ export default function MediaDropzone({
           onDragOver={(e) => e.preventDefault()}
           onDragLeave={(e) => {
             e.preventDefault();
-            setIsDragging(false);
+            // Ignore leave events fired when moving over the zone's own children.
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setIsDragging(false);
           }}
           onDrop={handleDrop}
-          className={`flex cursor-pointer flex-col items-center justify-center gap-xxs rounded-lg border-2 border-dashed text-center transition-colors ${
-            size === "lg" ? "min-h-[280px] p-xl" : "p-lg"
+          className={`group/drop relative flex cursor-pointer flex-col items-center justify-center gap-xs rounded-lg border-2 border-dashed text-center transition-all duration-enter ${
+            size === "lg" ? "min-h-[300px] p-xl" : "min-h-[140px] p-lg"
           } ${disabled ? "cursor-not-allowed opacity-50" : ""} ${
             isDragging
-              ? "border-accent bg-accent/5 shadow-glow-accent"
-              : "border-border bg-muted/40 hover:border-accent/60 hover:bg-muted dark:border-border-dark dark:bg-muted-dark/40 dark:hover:bg-muted-dark"
-          } ${error ? "border-destructive dark:border-destructive-dark" : ""}`}
+              ? "scale-[1.01] border-accent bg-accent-soft shadow-glow-accent"
+              : error
+                ? "border-destructive/60 bg-destructive/5"
+                : "border-border bg-muted/40 hover:border-accent/60 hover:bg-muted/70"
+          }`}
         >
-          <div className={`text-muted-foreground dark:text-muted-foreground-dark ${size === "lg" ? "scale-150" : ""}`}>
-            {kind === "video" ? <VideoIcon /> : <ImageIcon />}
-          </div>
-          <p className={size === "lg" ? "text-body-strong text-foreground dark:text-foreground-dark" : "text-caption-strong text-foreground dark:text-foreground-dark"}>
-            <span className="text-accent">Click to upload</span> or drag and drop
+          <span
+            className={`flex items-center justify-center rounded-xl transition-colors duration-enter ${
+              size === "lg" ? "h-16 w-16" : "h-12 w-12"
+            } ${isDragging ? "bg-accent-strong text-on-accent" : "bg-card text-accent ring-1 ring-inset ring-border group-hover/drop:ring-accent/40"}`}
+            aria-hidden
+          >
+            {isDragging ? (
+              <UploadSimple size={size === "lg" ? 30 : 22} weight="bold" />
+            ) : kind === "video" ? (
+              <FilmStrip size={size === "lg" ? 30 : 22} weight="duotone" />
+            ) : (
+              <ImageSquare size={size === "lg" ? 30 : 22} weight="duotone" />
+            )}
+          </span>
+          <p className={size === "lg" ? "text-body-strong text-foreground" : "text-caption-strong text-foreground"}>
+            {isDragging ? (
+              "Drop to upload"
+            ) : (
+              <>
+                <span className="text-accent">Click to upload</span> or drag and drop
+              </>
+            )}
           </p>
           {helperText && (
-            <p className="text-fine-print text-muted-foreground dark:text-muted-foreground-dark">{helperText}</p>
+            <p id={helpId} className="text-fine-print text-muted-foreground">
+              {helperText}
+            </p>
           )}
         </div>
       )}
 
-      {error && <p className="text-fine-print text-destructive dark:text-destructive-dark">{error}</p>}
+      {error && (
+        <p id={errorId} role="alert" className="flex items-center gap-1.5 text-fine-print text-destructive">
+          <WarningCircle size={14} weight="fill" aria-hidden />
+          {error}
+        </p>
+      )}
     </div>
   );
 }

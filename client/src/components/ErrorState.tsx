@@ -1,22 +1,25 @@
 import Button from "./Button";
-import { WarningCircle } from "@phosphor-icons/react";
+import { ArrowClockwise, WarningCircle } from "@phosphor-icons/react";
 
 export default function ErrorState({
   message,
+  title = "Something went wrong",
   onRetry,
 }: {
   message: string;
+  title?: string;
   onRetry?: () => void;
 }) {
   return (
-    <div className="flex justify-center py-16">
-      <div className="flex max-w-sm flex-col items-center gap-sm rounded-xl border border-border bg-card p-xl text-center dark:border-border-dark dark:bg-card-dark">
-        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-destructive/10 text-destructive dark:bg-destructive-dark/10 dark:text-destructive-dark">
-          <WarningCircle size={22} weight="bold" />
+    <div role="alert" className="flex animate-fade-up justify-center px-4 py-16">
+      <div className="flex max-w-sm flex-col items-center gap-sm text-center">
+        <span className="mb-xs flex h-16 w-16 items-center justify-center rounded-xl bg-destructive/10 text-destructive ring-1 ring-inset ring-destructive/20">
+          <WarningCircle size={28} weight="duotone" aria-hidden />
         </span>
-        <p className="text-caption text-muted-foreground dark:text-muted-foreground-dark">{message}</p>
+        <h2 className="text-tagline text-foreground">{title}</h2>
+        <p className="text-caption text-muted-foreground">{message}</p>
         {onRetry && (
-          <Button variant="outlined" size="small" onClick={onRetry}>
+          <Button variant="outlined" size="small" onClick={onRetry} startIcon={<ArrowClockwise size={16} />} className="!mt-xs">
             Try again
           </Button>
         )}

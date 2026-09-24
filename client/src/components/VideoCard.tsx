@@ -1,10 +1,15 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import CircularProgress from "@mui/material/CircularProgress";
-import { Play, WarningCircle } from "@phosphor-icons/react";
+import { LockSimple, Play, Sparkle, WarningCircle } from "@phosphor-icons/react";
 import type { Video } from "../types";
-import { formatDate, formatDuration } from "../lib/format";
+import { formatDate, formatDuration, formatViews } from "../lib/format";
+import dayjs from "../lib/dayjs";
 import OverflowTooltip from "./OverflowTooltip";
+
+/** Dark scrim chip used on top of thumbnails; always scrim/on-scrim regardless of theme. */
+const OVERLAY_CHIP = "rounded-sm bg-scrim/75 px-1.5 py-0.5 text-fine-print font-semibold text-on-scrim backdrop-blur-sm";
 
 export default function VideoCard({
   video,
@@ -19,61 +24,79 @@ export default function VideoCard({
   showDetails?: boolean;
   isFeatured?: boolean;
 }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const ready = video.processingStatus === "ready";
+
   return (
-    <Link to={`/watch/${video.id}`} className="block group">
-      <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border/60 bg-muted transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md dark:border-border-dark/60 dark:bg-muted-dark">
-        {video.thumbnailUrl && (
+    <Link
+      to={`/watch/${video.id}`}
+      className="group block rounded-lg outline-offset-4"
+      aria-label={showDetails ? undefined : video.title}
+    >
+      <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted ring-1 ring-inset ring-border/60">
+        {video.thumbnailUrl && !imageFailed ? (
           <img
             src={video.thumbnailUrl}
-            alt={video.title}
-            className="h-full w-full object-cover group-hover:opacity-90"
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.style.visibility = "hidden";
-            }}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover transition-transform duration-enter ease-out group-hover:scale-[1.03]"
+            onError={() => setImageFailed(true)}
           />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-muted-foreground" aria-hidden>
+            <Play size={32} weight="duotone" />
+          </div>
         )}
-        {video.processingStatus === "ready" && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-200 group-hover:bg-black/20 group-hover:opacity-100">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-primary shadow-md">
-              <Play size={22} weight="fill" />
+
+        {ready && (
+          <div
+            aria-hidden
+            className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-scrim/50 via-transparent to-transparent opacity-0 transition-opacity duration-enter group-hover:opacity-100 group-focus-visible:opacity-100"
+          >
+            <span className="flex h-12 w-12 scale-90 items-center justify-center rounded-full bg-accent-strong/95 text-on-accent shadow-glow-accent transition-transform duration-enter ease-out group-hover:scale-100">
+              <Play size={20} weight="fill" />
             </span>
           </div>
         )}
+
         {video.processingStatus === "pending" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60 text-white">
-            <CircularProgress size={20} sx={{ color: "inherit" }} />
-            <span className="text-xs font-medium">Processing…</span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-scrim/65 text-on-scrim backdrop-blur-[2px]">
+            <CircularProgress size={22} sx={{ color: "inherit" }} />
+            <span className="text-fine-print font-semibold">Processing…</span>
           </div>
         )}
         {video.processingStatus === "failed" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60 text-white">
-            <WarningCircle size={20} weight="fill" />
-            <span className="text-xs font-medium">Processing failed</span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-scrim/70 text-on-scrim">
+            <WarningCircle size={22} weight="fill" className="text-destructive" aria-hidden />
+            <span className="text-fine-print font-semibold">Processing failed</span>
           </div>
         )}
-        {video.visibility === "private" && (
-          <span className="absolute right-2 top-2 rounded bg-black/70 px-2 py-0.5 text-xs font-medium text-white">
-            Private
-          </span>
-        )}
-        {isFeatured && (
-          <span className="absolute left-2 top-2 rounded bg-white/90 px-2 py-0.5 text-xs font-semibold text-primary shadow-sm">
-            Featured
-          </span>
-        )}
-        <span className="absolute bottom-2 right-2 rounded bg-black/80 px-1.5 py-0.5 text-xs font-medium text-white">
-          {formatDuration(video.duration)}
-        </span>
+
+        <div className="absolute inset-x-2 top-2 flex items-start justify-between gap-2">
+          {isFeatured ? (
+            <span className="inline-flex items-center gap-1 rounded-sm bg-accent-strong px-1.5 py-0.5 text-fine-print font-semibold text-on-accent">
+              <Sparkle size={12} weight="fill" aria-hidden />
+              Featured
+            </span>
+          ) : (
+            <span />
+          )}
+          {video.visibility === "private" && (
+            <span className={`inline-flex items-center gap-1 ${OVERLAY_CHIP}`}>
+              <LockSimple size={12} weight="bold" aria-hidden />
+              Private
+            </span>
+          )}
+        </div>
+
+        <span className={`tabular absolute bottom-2 right-2 ${OVERLAY_CHIP}`}>{formatDuration(video.duration)}</span>
       </div>
+
       {showDetails && (
-        <div className="mt-2 flex gap-2">
+        <div className="mt-sm flex gap-sm">
           {showAvatar && (
-            <Avatar
-              src={video.creatorImage || undefined}
-              sx={{ width: 36, height: 36 }}
-              className="mt-0.5 shrink-0"
-            >
+            <Avatar src={video.creatorImage || undefined} alt="" sx={{ width: 36, height: 36 }} className="mt-0.5 shrink-0">
               {video.creatorName?.[0]?.toUpperCase()}
             </Avatar>
           )}
@@ -81,23 +104,22 @@ export default function VideoCard({
             <OverflowTooltip
               component="h3"
               lines={2}
-              className="text-body-strong text-foreground dark:text-foreground-dark"
+              className="text-body-strong text-foreground transition-colors duration-fast group-hover:text-accent"
               title={video.title}
             >
               {video.title}
             </OverflowTooltip>
             {showCreatorName && (
-              <OverflowTooltip
-                component="p"
-                lines={1}
-                className="text-caption text-foreground dark:text-foreground-dark"
-                title={video.creatorName}
-              >
+              <OverflowTooltip component="p" lines={1} className="mt-0.5 text-caption text-muted-foreground" title={video.creatorName}>
                 {video.creatorName}
               </OverflowTooltip>
             )}
-            <p className="text-fine-print text-muted-foreground dark:text-muted-foreground-dark">
-              {video.views.toLocaleString()} views &middot; {formatDate(video.createdAt)}
+            <p className="tabular mt-0.5 text-fine-print text-muted-foreground">
+              <span title={`${video.views.toLocaleString()} views`}>{formatViews(video.views)}</span>
+              <span aria-hidden> · </span>
+              <time dateTime={video.createdAt} title={formatDate(video.createdAt)}>
+                {dayjs(video.createdAt).fromNow()}
+              </time>
             </p>
           </div>
         </div>

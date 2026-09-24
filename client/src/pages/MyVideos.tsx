@@ -7,11 +7,11 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import TextField from "../components/TextField";
-import InputAdornment from "@mui/material/InputAdornment";
 import Select from "../components/Select";
 import Button from "../components/Button";
 import Skeleton from "@mui/material/Skeleton";
-import { MagnifyingGlass, VideoCamera } from "@phosphor-icons/react";
+import { MagnifyingGlass, Trash, UploadSimple, VideoCamera } from "@phosphor-icons/react";
+import PageHeader from "../components/PageHeader";
 import { useGetChannelQuery, usersApi } from "../store/api/usersApi";
 import { useDeleteVideoMutation } from "../store/api/videosApi";
 import type { Video } from "../types";
@@ -19,7 +19,7 @@ import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { notifyApiError } from "../lib/toast";
 import MyVideoCard from "../components/MyVideoCard";
 import UndoToast from "../components/UndoToast";
-import { MyVideoGridSkeleton } from "../components/VideoCardSkeleton";
+import { MY_VIDEO_GRID_CLASS, MyVideoGridSkeleton } from "../components/VideoCardSkeleton";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 
@@ -115,14 +115,12 @@ export default function MyVideos() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-screen-2xl p-md sm:p-lg">
-        <div className="mb-lg flex flex-col gap-md">
-          <div className="flex items-center justify-between">
-            <Skeleton variant="text" width={180} sx={{ fontSize: "2.125rem" }} />
-            <Skeleton variant="rounded" width={140} height={36} />
-          </div>
-          <Skeleton variant="rounded" height={44} />
+      <div className="mx-auto w-full max-w-[1600px] px-md pb-16 pt-lg sm:px-lg" aria-busy>
+        <div className="mb-lg flex items-center justify-between">
+          <Skeleton variant="text" width={200} sx={{ fontSize: "28px" }} />
+          <Skeleton variant="rounded" width={140} height={40} />
         </div>
+        <Skeleton variant="rounded" height={44} className="mb-lg" />
         <MyVideoGridSkeleton />
       </div>
     );
@@ -133,93 +131,106 @@ export default function MyVideos() {
   }
 
   return (
-    <div className="mx-auto max-w-screen-2xl p-md sm:p-lg">
-      <div className="mb-lg flex flex-col gap-md">
-        <div className="flex flex-wrap items-center justify-between gap-sm">
-          <div className="flex items-baseline gap-sm">
-            <h1 className="text-display-md text-foreground dark:text-foreground-dark">My Videos</h1>
-            <span className="text-caption text-muted-foreground dark:text-muted-foreground-dark">
-              &middot; {videos.length} {videos.length === 1 ? "video" : "videos"}
-            </span>
-          </div>
-          {videos.length > 0 && (
+    <div className="mx-auto w-full max-w-[1600px] px-md pb-16 pt-lg sm:px-lg">
+      <PageHeader
+        icon={VideoCamera}
+        title="My videos"
+        description={`${videos.length} ${videos.length === 1 ? "video" : "videos"} on your channel`}
+        actions={
+          <Button component={Link} to="/upload" variant="contained" startIcon={<UploadSimple size={18} weight="bold" />}>
+            Upload
+          </Button>
+        }
+      />
+
+      {videos.length > 0 && (
+        <div className="mb-lg flex flex-col gap-sm sm:flex-row sm:items-center">
+          <label className="relative block min-w-0 flex-1">
+            <span className="sr-only">Search your videos</span>
+            <MagnifyingGlass
+              size={18}
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+              aria-hidden
+            />
+            <input
+              type="search"
+              placeholder="Search your videos"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-11 w-full rounded-full border border-border bg-muted/60 pl-10 pr-4 text-caption text-foreground outline-none transition-colors duration-fast placeholder:text-muted-foreground focus:border-ring focus:bg-card"
+            />
+          </label>
+          <div className="flex items-center gap-sm">
+            {search && (
+              <span className="tabular text-caption text-muted-foreground" role="status">
+                {visibleVideos.length} {visibleVideos.length === 1 ? "match" : "matches"}
+              </span>
+            )}
             <Select
+              dense
               size="small"
               value={sort}
               onChange={(e) => setSort(e.target.value as "recent" | "views")}
-              className="min-w-[170px]"
               options={[
                 { value: "recent", label: "Recently added" },
                 { value: "views", label: "Most viewed" },
               ]}
+              slotProps={{ htmlInput: { "aria-label": "Sort videos" } }}
             />
-          )}
+          </div>
         </div>
-
-        {videos.length > 0 && (
-          <TextField
-            size="small"
-            placeholder="Search your videos"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            fullWidth
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <MagnifyingGlass size={18} />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-        )}
-      </div>
+      )}
 
       {videos.length === 0 ? (
         <EmptyState
-          message="You haven't uploaded any videos yet."
+          title="Your channel is ready"
+          message="You haven't uploaded any videos yet. Your uploads will appear here."
           action={
-            <Button
-              component={Link}
-              to="/upload"
-              variant="contained"
-              startIcon={<VideoCamera size={18} weight="bold" />}
-            >
+            <Button component={Link} to="/upload" variant="contained" startIcon={<UploadSimple size={18} weight="bold" />}>
               Upload your first video
             </Button>
           }
         />
       ) : visibleVideos.length === 0 ? (
-        <EmptyState message="No videos match your search." />
+        <EmptyState icon={MagnifyingGlass} message="No videos match your search." />
       ) : (
-        <div className="grid gap-lg [grid-template-columns:repeat(auto-fill,minmax(300px,1fr))]">
-          {visibleVideos.map((video) => (
-            <MyVideoCard key={video.id} video={video} onDeleteClick={openDeleteDialog} />
+        <ul className={MY_VIDEO_GRID_CLASS}>
+          {visibleVideos.map((video, i) => (
+            <li key={video.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 11) * 30}ms` }}>
+              <MyVideoCard video={video} onDeleteClick={openDeleteDialog} />
+            </li>
           ))}
-        </div>
+        </ul>
       )}
 
       <Dialog open={pendingDelete !== null} onClose={closeDeleteDialog} fullWidth maxWidth="sm">
-        <DialogTitle>Delete this video?</DialogTitle>
+        <DialogTitle className="flex items-center gap-2">
+          <Trash size={20} className="text-destructive" aria-hidden />
+          Delete this video?
+        </DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            This cannot be undone once the countdown ends. To confirm, type the exact video title:{" "}
-            <strong>{pendingDelete?.title}</strong>
+          <DialogContentText component="div" className="!text-caption">
+            <p>
+              You&apos;ll have 10 seconds to undo. After that, the video, its comments and stats are removed permanently.
+            </p>
+            <p className="mt-sm">
+              Type <strong className="text-foreground">{pendingDelete?.title}</strong> to confirm.
+            </p>
           </DialogContentText>
           <TextField
             autoFocus
             fullWidth
-            className="mt-4"
-            placeholder="Enter the video title"
+            className="!mt-md"
+            label="Video title"
             value={confirmText}
             onChange={(e) => setConfirmText(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && canConfirmDelete && handleConfirmDelete()}
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
           <Button onClick={closeDeleteDialog}>Cancel</Button>
-          <Button color="error" onClick={handleConfirmDelete} disabled={!canConfirmDelete}>
-            Delete
+          <Button color="error" variant="contained" onClick={handleConfirmDelete} disabled={!canConfirmDelete}>
+            Delete video
           </Button>
         </DialogActions>
       </Dialog>

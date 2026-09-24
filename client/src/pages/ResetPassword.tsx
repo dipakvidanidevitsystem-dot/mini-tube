@@ -1,9 +1,13 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
+import { ArrowLeft } from "@phosphor-icons/react";
 import Button from "../components/Button";
 import { useResetPasswordMutation } from "../store/api/authApi";
 import { getRtkErrorMessage } from "../store/lib/getRtkErrorMessage";
 import PasswordField from "../components/PasswordField";
+import AuthLayout from "../components/AuthLayout";
+import FormAlert from "../components/FormAlert";
+import { notifySuccess } from "../lib/toast";
 import { validateMatch, validatePassword } from "../lib/validation";
 
 export default function ResetPassword() {
@@ -24,11 +28,15 @@ export default function ResetPassword() {
     const nextConfirmPasswordError = validateMatch(confirmPassword, password, "Passwords");
     setPasswordError(nextPasswordError || "");
     setConfirmPasswordError(nextConfirmPasswordError || "");
-    if (nextPasswordError || nextConfirmPasswordError) return;
+    if (nextPasswordError || nextConfirmPasswordError) {
+      document.getElementById(nextPasswordError ? "reset-password" : "reset-confirm")?.focus();
+      return;
+    }
 
     setError("");
     try {
       await resetPassword({ token, password }).unwrap();
+      notifySuccess("Password updated. Sign in with your new password.");
       navigate("/login");
     } catch (err) {
       setError(getRtkErrorMessage(err));
@@ -36,35 +44,48 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="mx-auto mt-16 max-w-sm">
-      <h1 className="mb-6 text-2xl font-semibold">Reset password</h1>
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+    <AuthLayout
+      title="Choose a new password"
+      subtitle="Use at least 8 characters with an uppercase letter, a lowercase letter and a number."
+      footer={
+        <Link to="/login" className="inline-flex items-center gap-1.5 font-semibold text-accent hover:underline">
+          <ArrowLeft size={14} weight="bold" aria-hidden />
+          Back to sign in
+        </Link>
+      }
+    >
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-md">
+        {error && <FormAlert>{error}</FormAlert>}
         <PasswordField
+          id="reset-password"
           label="New password"
+          autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          onBlur={() => setPasswordError(validatePassword(password) || "")}
+          onBlur={() => password && setPasswordError(validatePassword(password) || "")}
           error={!!passwordError}
           helperText={passwordError}
           disabled={submitting}
+          required
+          fullWidth
         />
         <PasswordField
+          id="reset-confirm"
           label="Confirm password"
+          autoComplete="new-password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          onBlur={() => setConfirmPasswordError(validateMatch(confirmPassword, password, "Passwords") || "")}
+          onBlur={() => confirmPassword && setConfirmPasswordError(validateMatch(confirmPassword, password, "Passwords") || "")}
           error={!!confirmPasswordError}
           helperText={confirmPasswordError}
           disabled={submitting}
+          required
+          fullWidth
         />
-        {error && <p className="text-sm font-medium text-foreground dark:text-foreground-dark">{error}</p>}
-        <Button type="submit" variant="contained" disabled={submitting}>
-          Reset password
+        <Button type="submit" variant="contained" size="large" loading={submitting} fullWidth>
+          {submitting ? "Updating…" : "Update password"}
         </Button>
       </form>
-      <p className="mt-4 text-sm">
-        <Link to="/login">Back to log in</Link>
-      </p>
-    </div>
+    </AuthLayout>
   );
 }

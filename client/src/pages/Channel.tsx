@@ -2,14 +2,16 @@ import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import Button from "../components/Button";
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import Skeleton from "@mui/material/Skeleton";
+import { MagnifyingGlass, PencilSimple, Check, Bell, Sparkle, Play, CalendarBlank, Eye, UsersThree } from "@phosphor-icons/react";
+import Select from "../components/Select";
+import { VideoGridSkeleton } from "../components/VideoCardSkeleton";
 import { useGetChannelQuery, useToggleSubscribeMutation } from "../store/api/usersApi";
 import { useAppSelector } from "../store/hooks";
 import { notifyApiError, notifySuccess } from "../lib/toast";
-import { formatDate } from "../lib/format";
+import { formatCompact, formatDate } from "../lib/format";
 import VideoGrid from "../components/VideoGrid";
 import VideoCard from "../components/VideoCard";
-import Loading from "../components/Loading";
 import ErrorState from "../components/ErrorState";
 import type { Video, Visibility } from "../types";
 
@@ -67,7 +69,23 @@ export default function Channel() {
       });
   }, [channel, searchQuery, sortBy, visibilityFilter]);
 
-  if (loading) return <Loading />;
+  if (loading) {
+    return (
+      <div className="mx-auto w-full max-w-[1400px] px-md py-lg sm:px-lg" aria-busy>
+        <Skeleton variant="rounded" className="!h-40 w-full !rounded-xl sm:!h-52" />
+        <div className="-mt-10 flex items-end gap-md px-md">
+          <Skeleton variant="circular" width={112} height={112} />
+          <div className="flex-1 pb-2">
+            <Skeleton variant="text" width={220} sx={{ fontSize: "28px" }} />
+            <Skeleton variant="text" width={280} />
+          </div>
+        </div>
+        <div className="mt-xl">
+          <VideoGridSkeleton count={8} />
+        </div>
+      </div>
+    );
+  }
 
   if (hasError) {
     return (
@@ -82,40 +100,66 @@ export default function Channel() {
 
   const isOwner = user?.id === channel.id;
   const totalViews = channel.videos.reduce((sum, video) => sum + video.views, 0);
+  const stats = [
+    { label: channel.subscriberCount === 1 ? "subscriber" : "subscribers", value: channel.subscriberCount },
+    { label: channel.videoCount === 1 ? "video" : "videos", value: channel.videoCount },
+    { label: totalViews === 1 ? "view" : "views", value: totalViews },
+  ];
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-lg px-4 py-lg sm:px-6 sm:py-xl">
-      <section className="overflow-hidden rounded-lg border border-border bg-card dark:border-border-dark dark:bg-card-dark">
-        <div className="h-28 bg-secondary bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.08)_0,rgba(255,255,255,0.08)_1px,transparent_1px,transparent_16px)] sm:h-36">
-          <div className="h-full w-full bg-[linear-gradient(90deg,rgba(15,15,35,0.14),transparent_65%)]" />
+    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-lg px-md pb-16 pt-md sm:px-lg sm:pt-lg">
+      <section aria-label="Channel header">
+        <div className="relative h-36 overflow-hidden rounded-xl bg-accent-soft ring-1 ring-inset ring-border sm:h-52">
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-[radial-gradient(120%_120%_at_0%_0%,rgb(var(--c-accent)/0.55),transparent_55%),radial-gradient(90%_120%_at_100%_100%,rgb(var(--c-info)/0.45),transparent_60%)]"
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0 opacity-40 [background-image:radial-gradient(rgb(var(--c-foreground)/0.18)_1px,transparent_1px)] [background-size:18px_18px]"
+          />
         </div>
 
-        <div className="-mt-10 flex flex-col gap-md px-4 pb-lg sm:-mt-12 sm:flex-row sm:items-end sm:justify-between sm:px-6">
-          <div className="flex flex-col items-center gap-sm text-center sm:flex-row sm:items-end sm:text-left">
+        <div className="relative -mt-12 flex flex-col gap-md px-xs sm:-mt-14 sm:flex-row sm:items-end sm:justify-between sm:px-lg">
+          <div className="flex flex-col items-center gap-md text-center sm:flex-row sm:items-end sm:text-left">
             <Avatar
               src={channel.profileImage || undefined}
-              sx={{ width: 112, height: 112, border: "4px solid", borderColor: "background.paper" }}
-              className="shadow-md"
+              alt=""
+              sx={{ width: { xs: 104, sm: 128 }, height: { xs: 104, sm: 128 }, fontSize: 40 }}
+              className="shadow-float ring-4 ring-background"
             >
               {channel.name?.[0]?.toUpperCase()}
             </Avatar>
             <div className="min-w-0 pb-1">
-              <h1 className="break-words text-display-md text-foreground dark:text-foreground-dark">{channel.name}</h1>
-              <p className="mt-1 text-caption text-muted-foreground dark:text-muted-foreground-dark">
-                {pluralize(channel.subscriberCount, "subscriber")} &middot; {pluralize(channel.videoCount, "video")} &middot;{" "}
-                {pluralize(totalViews, "total view")}
-              </p>
+              <h1 className="text-display-md text-foreground [overflow-wrap:anywhere]">{channel.name}</h1>
+              <ul className="tabular mt-xs flex flex-wrap justify-center gap-xs sm:justify-start">
+                {stats.map((stat) => (
+                  <li
+                    key={stat.label}
+                    title={`${stat.value.toLocaleString()} ${stat.label}`}
+                    className="rounded-full bg-muted px-3 py-1 text-fine-print text-muted-foreground"
+                  >
+                    <span className="font-semibold text-foreground">{formatCompact(stat.value)}</span> {stat.label}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
 
           <div className="flex justify-center pb-1 sm:justify-end">
             {isOwner ? (
-              <Button component={Link} to="/settings" variant="outlined">
+              <Button component={Link} to="/settings" variant="outlined" startIcon={<PencilSimple size={16} />} className="!rounded-full">
                 Edit channel
               </Button>
             ) : (
               user && (
-                <Button variant={channel.isSubscribed ? "outlined" : "contained"} onClick={handleSubscribe}>
+                <Button
+                  variant={channel.isSubscribed ? "outlined" : "contained"}
+                  onClick={handleSubscribe}
+                  aria-pressed={channel.isSubscribed}
+                  startIcon={channel.isSubscribed ? <Check size={16} weight="bold" /> : <Bell size={16} />}
+                  className="!rounded-full !px-5"
+                >
                   {channel.isSubscribed ? "Subscribed" : "Subscribe"}
                 </Button>
               )
@@ -124,88 +168,121 @@ export default function Channel() {
         </div>
       </section>
 
-      <nav className="flex gap-2 border-b border-border dark:border-border-dark" aria-label="Channel sections">
+      <div role="tablist" aria-label="Channel sections" className="flex gap-1 border-b border-border">
         {(["videos", "about"] as const).map((tab) => (
           <button
             key={tab}
+            id={`channel-tab-${tab}`}
+            role="tab"
             type="button"
+            aria-selected={activeTab === tab}
+            aria-controls={`channel-panel-${tab}`}
             onClick={() => setActiveTab(tab)}
-            className={`border-b-2 px-3 py-3 text-caption-strong capitalize transition-colors sm:px-4 ${
-              activeTab === tab
-                ? "border-primary text-foreground dark:border-ring-dark dark:text-foreground-dark"
-                : "border-transparent text-muted-foreground hover:text-foreground dark:text-muted-foreground-dark dark:hover:text-foreground-dark"
+            className={`relative h-11 px-4 text-caption-strong capitalize transition-colors duration-fast ${
+              activeTab === tab ? "text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {tab}
+            {activeTab === tab && <span aria-hidden className="absolute inset-x-2 -bottom-px h-[3px] rounded-full bg-accent" />}
           </button>
         ))}
-      </nav>
+      </div>
 
       {activeTab === "videos" ? (
-        <>
+        <div id="channel-panel-videos" role="tabpanel" aria-labelledby="channel-tab-videos" className="flex flex-col gap-xl">
           {featuredVideo && (
-            <section className="grid gap-md border-b border-border pb-lg dark:border-border-dark md:grid-cols-[minmax(0,1.2fr)_minmax(260px,0.8fr)] md:items-center">
+            <section
+              aria-label="Featured video"
+              className="grid gap-md rounded-xl border border-border bg-card p-sm sm:p-md md:grid-cols-[minmax(0,1.15fr)_minmax(260px,0.85fr)] md:items-center md:gap-lg"
+            >
               <VideoCard video={featuredVideo} showDetails={false} isFeatured />
-              <div className="flex min-w-0 flex-col justify-center gap-xs md:py-sm">
-                <p className="text-caption-strong uppercase tracking-wide text-accent">Featured</p>
-                <h2 className="line-clamp-2 text-tagline text-foreground dark:text-foreground-dark">{featuredVideo.title}</h2>
-                <p className="text-caption text-muted-foreground dark:text-muted-foreground-dark">
-                  {pluralize(featuredVideo.views, "view")} &middot; {formatDate(featuredVideo.createdAt)}
+              <div className="flex min-w-0 flex-col justify-center gap-xs px-xs md:py-sm">
+                <p className="inline-flex items-center gap-1.5 text-fine-print font-semibold uppercase tracking-wider text-accent">
+                  <Sparkle size={14} weight="fill" aria-hidden />
+                  Most popular
+                </p>
+                <h2 className="line-clamp-2 text-lead text-foreground font-heading">{featuredVideo.title}</h2>
+                <p className="tabular text-caption text-muted-foreground">
+                  {pluralize(featuredVideo.views, "view")} · {formatDate(featuredVideo.createdAt)}
                 </p>
                 {featuredVideo.description && (
-                  <p className="line-clamp-3 text-caption text-foreground dark:text-foreground-dark">
-                    {featuredVideo.description}
-                  </p>
+                  <p className="line-clamp-3 text-caption text-foreground">{featuredVideo.description}</p>
                 )}
+                <Button
+                  component={Link}
+                  to={`/watch/${featuredVideo.id}`}
+                  variant="contained"
+                  startIcon={<Play size={14} weight="fill" />}
+                  className="!mt-xs w-fit !rounded-full"
+                >
+                  Watch now
+                </Button>
               </div>
             </section>
           )}
 
-          <section className="flex flex-col gap-md">
-            <div className="flex flex-col gap-sm md:flex-row md:items-center md:justify-between">
-              <h2 className="text-tagline text-foreground dark:text-foreground-dark">Videos</h2>
+          <section aria-labelledby="channel-videos-heading" className="flex flex-col gap-md">
+            <div className="flex flex-col gap-sm lg:flex-row lg:items-center lg:justify-between">
+              <h2 id="channel-videos-heading" className="flex items-center gap-2 text-tagline text-foreground">
+                Videos
+                <span className="tabular rounded-full bg-muted px-2 py-0.5 text-fine-print font-semibold text-muted-foreground">
+                  {visibleVideos.length}
+                </span>
+              </h2>
               <div className="flex flex-col gap-sm sm:flex-row sm:items-center">
+                {isOwner && (
+                  <div
+                    role="group"
+                    className="inline-flex h-10 w-fit rounded-full bg-muted p-1"
+                    aria-label="Filter channel videos by visibility"
+                  >
+                    {(["all", "public", "private"] as const).map((visibility) => (
+                      <button
+                        key={visibility}
+                        type="button"
+                        aria-pressed={visibilityFilter === visibility}
+                        onClick={() => setVisibilityFilter(visibility)}
+                        className={`rounded-full px-3.5 text-button-utility capitalize transition-colors duration-fast ${
+                          visibilityFilter === visibility
+                            ? "bg-card text-foreground shadow-float-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {visibility}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 <label className="relative block min-w-0 sm:w-64">
+                  <span className="sr-only">Search this channel</span>
                   <MagnifyingGlass
                     size={18}
-                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden
                   />
                   <input
+                    type="search"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder="Search this channel"
-                    className="h-10 w-full rounded-md border border-border bg-card pl-10 pr-3 text-caption text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-border-dark dark:bg-card-dark dark:text-foreground-dark dark:focus:border-ring-dark"
+                    className="h-10 w-full rounded-full border border-border bg-muted/60 pl-10 pr-4 text-caption text-foreground outline-none transition-colors duration-fast placeholder:text-muted-foreground focus:border-ring focus:bg-card"
                   />
                 </label>
 
-                <select
+                <Select
+                  dense
+                  size="small"
                   value={sortBy}
                   onChange={(event) => setSortBy(event.target.value as ChannelSort)}
-                  className="h-10 rounded-md border border-border bg-card px-3 text-caption text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-border-dark dark:bg-card-dark dark:text-foreground-dark dark:focus:border-ring-dark"
-                  aria-label="Sort channel videos"
-                >
-                  <option value="recent">Recently added</option>
-                  <option value="popular">Most viewed</option>
-                  <option value="oldest">Oldest first</option>
-                </select>
+                  options={[
+                    { value: "recent", label: "Recently added" },
+                    { value: "popular", label: "Most viewed" },
+                    { value: "oldest", label: "Oldest first" },
+                  ]}
+                  slotProps={{ htmlInput: { "aria-label": "Sort channel videos" } }}
+                />
               </div>
-            </div>
-
-            <div className="inline-flex w-fit overflow-hidden rounded-md border border-border bg-muted/60 dark:border-border-dark dark:bg-muted-dark" aria-label="Filter channel videos by visibility">
-              {(["all", "public", "private"] as const).map((visibility) => (
-                <button
-                  key={visibility}
-                  type="button"
-                  onClick={() => setVisibilityFilter(visibility)}
-                  className={`px-3 py-2 text-caption capitalize transition-colors sm:px-4 ${
-                    visibilityFilter === visibility
-                      ? "bg-card text-foreground shadow-sm dark:bg-card-dark dark:text-foreground-dark"
-                      : "text-muted-foreground hover:text-foreground dark:text-muted-foreground-dark dark:hover:text-foreground-dark"
-                  }`}
-                >
-                  {visibility}
-                </button>
-              ))}
             </div>
 
             <VideoGrid
@@ -215,20 +292,38 @@ export default function Channel() {
               showCreatorName={false}
             />
           </section>
-        </>
+        </div>
       ) : (
-        <section className="max-w-2xl py-sm">
-          <h2 className="text-tagline text-foreground dark:text-foreground-dark">About</h2>
-          <div className="mt-md space-y-sm text-caption text-foreground dark:text-foreground-dark">
-            <p className="text-body-strong">{channel.name}</p>
-            <p className="max-w-xl text-muted-foreground dark:text-muted-foreground-dark">
+        <section
+          id="channel-panel-about"
+          role="tabpanel"
+          aria-labelledby="channel-tab-about"
+          className="grid gap-md lg:grid-cols-[minmax(0,1fr)_320px]"
+        >
+          <div className="rounded-xl border border-border bg-card p-md sm:p-lg">
+            <h2 className="text-tagline text-foreground">About</h2>
+            <p className="mt-sm max-w-xl text-caption text-muted-foreground">
               Developer and creator sharing projects, tutorials, and experiments.
             </p>
-            <p>Joined {formatDate(channel.createdAt)}</p>
-            <p className="text-muted-foreground dark:text-muted-foreground-dark">
-              {pluralize(channel.videoCount, "video")} &middot; {pluralize(channel.subscriberCount, "subscriber")}
-            </p>
           </div>
+          <dl className="flex flex-col gap-sm rounded-xl border border-border bg-card p-md sm:p-lg">
+            <h3 className="text-body-strong text-foreground">Stats</h3>
+            <div className="flex items-center gap-sm text-caption">
+              <CalendarBlank size={18} className="text-muted-foreground" aria-hidden />
+              <dt className="sr-only">Joined</dt>
+              <dd className="text-foreground">Joined {formatDate(channel.createdAt)}</dd>
+            </div>
+            <div className="flex items-center gap-sm text-caption">
+              <Eye size={18} className="text-muted-foreground" aria-hidden />
+              <dt className="sr-only">Views</dt>
+              <dd className="tabular text-foreground">{pluralize(totalViews, "view")}</dd>
+            </div>
+            <div className="flex items-center gap-sm text-caption">
+              <UsersThree size={18} className="text-muted-foreground" aria-hidden />
+              <dt className="sr-only">Subscribers</dt>
+              <dd className="tabular text-foreground">{pluralize(channel.subscriberCount, "subscriber")}</dd>
+            </div>
+          </dl>
         </section>
       )}
     </div>

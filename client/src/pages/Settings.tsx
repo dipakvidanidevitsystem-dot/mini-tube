@@ -1,16 +1,21 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import Switch from "../components/Switch";
 import TextField from "../components/TextField";
 import Button from "../components/Button";
 import Avatar from "@mui/material/Avatar";
-import { Camera, UserCircle, LockKey, BellRinging, X } from "@phosphor-icons/react";
+import { Camera, UserCircle, LockKey, BellRinging, X, Gear, Palette, Sun, Moon, CheckCircle } from "@phosphor-icons/react";
+import PageHeader from "../components/PageHeader";
+import Panel from "../components/Panel";
+import FormAlert from "../components/FormAlert";
+import { colorTokens } from "../theme/tokens";
+import { setMode } from "../store/slices/themeSlice";
 import {
   useUpdatePreferencesMutation,
   useUpdateProfileMutation,
   useChangePasswordMutation,
 } from "../store/api/usersApi";
 import { getRtkErrorMessage } from "../store/lib/getRtkErrorMessage";
-import { useAppSelector } from "../store/hooks";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { notifyApiError, notifySuccess } from "../lib/toast";
 import PasswordField from "../components/PasswordField";
 import type { NotificationPreferences } from "../types";
@@ -39,35 +44,17 @@ const NOTIFICATION_OPTIONS: { key: keyof NotificationPreferences; label: string;
   },
 ];
 
-function SettingsSection({
-  icon,
-  title,
-  description,
-  children,
-}: {
-  icon: ReactNode;
-  title: string;
-  description: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="rounded-xl border border-border bg-card p-lg dark:border-border-dark dark:bg-card-dark">
-      <div className="mb-lg flex items-center gap-sm">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
-          {icon}
-        </span>
-        <div>
-          <h2 className="text-body-strong text-foreground dark:text-foreground-dark">{title}</h2>
-          <p className="text-fine-print text-muted-foreground dark:text-muted-foreground-dark">{description}</p>
-        </div>
-      </div>
-      {children}
-    </section>
-  );
-}
+const SECTIONS = [
+  { id: "profile", label: "Profile", icon: UserCircle },
+  { id: "appearance", label: "Appearance", icon: Palette },
+  { id: "security", label: "Password", icon: LockKey },
+  { id: "notifications", label: "Notifications", icon: BellRinging },
+];
 
 export default function Settings() {
   const user = useAppSelector((state) => state.auth.user);
+  const mode = useAppSelector((state) => state.theme.mode);
+  const dispatch = useAppDispatch();
   const [updatePreferences] = useUpdatePreferencesMutation();
   const [updateProfile, { isLoading: profileSubmitting }] = useUpdateProfileMutation();
   const [changePassword, { isLoading: passwordSubmitting }] = useChangePasswordMutation();
@@ -163,153 +150,209 @@ export default function Settings() {
   };
 
   return (
-    <div className="mx-auto mt-8 max-w-2xl px-4 pb-16">
-      <div className="mb-lg">
-        <h1 className="text-display-md text-foreground dark:text-foreground-dark">Settings</h1>
-        <p className="mt-xxs text-body text-muted-foreground dark:text-muted-foreground-dark">
-          Manage your profile, security, and notification preferences.
-        </p>
-      </div>
+    <div className="mx-auto w-full max-w-[1100px] px-md pb-16 pt-lg sm:px-lg">
+      <PageHeader icon={Gear} title="Settings" description="Manage your profile, security, appearance and notifications." />
 
-      <div className="flex flex-col gap-lg">
-        <SettingsSection
-          icon={<UserCircle size={20} weight="bold" />}
-          title="Profile"
-          description="Update your photo and display name"
-        >
-          <form onSubmit={handleProfileSubmit} noValidate className="flex flex-col gap-md">
-            <div className="flex items-center gap-md">
-              <div className="group relative shrink-0">
-                <Avatar
-                  src={avatarPreview || user.profileImage || undefined}
-                  sx={{ width: 72, height: 72, fontSize: "1.75rem" }}
+      <div className="grid gap-lg lg:grid-cols-[200px_minmax(0,1fr)]">
+        <nav aria-label="Settings sections" className="hidden lg:block">
+          <ul className="sticky top-20 flex flex-col gap-0.5">
+            {SECTIONS.map(({ id, label, icon: SectionIcon }) => (
+              <li key={id}>
+                <a
+                  href={`#${id}`}
+                  className="flex h-10 items-center gap-sm rounded-md px-3 text-caption text-muted-foreground transition-colors duration-fast hover:bg-muted hover:text-foreground"
                 >
-                  {user.name?.[0]?.toUpperCase()}
-                </Avatar>
-                <label
-                  htmlFor="avatar-input"
-                  className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/0 text-transparent transition-colors group-hover:bg-black/50 group-hover:text-white"
-                >
-                  <Camera size={22} weight="bold" />
-                </label>
-                <input
-                  id="avatar-input"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="sr-only"
-                  disabled={profileSubmitting}
+                  <SectionIcon size={18} aria-hidden />
+                  {label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="flex min-w-0 flex-col gap-lg">
+          <Panel id="profile" icon={UserCircle} title="Profile" description="Update your photo and display name" className="scroll-mt-20">
+            <form onSubmit={handleProfileSubmit} noValidate className="flex flex-col gap-md">
+              {profileError && <FormAlert>{profileError}</FormAlert>}
+              <div className="flex items-center gap-md">
+                <div className="group relative shrink-0">
+                  <Avatar
+                    src={avatarPreview || user.profileImage || undefined}
+                    alt=""
+                    sx={{ width: 80, height: 80, fontSize: "1.75rem" }}
+                    className="ring-2 ring-border"
+                  >
+                    {user.name?.[0]?.toUpperCase()}
+                  </Avatar>
+                  <label
+                    htmlFor="avatar-input"
+                    className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-scrim/0 text-transparent transition-colors duration-fast group-hover:bg-scrim/55 group-hover:text-on-scrim group-has-[:focus-visible]:bg-scrim/55 group-has-[:focus-visible]:text-on-scrim"
+                  >
+                    <Camera size={22} weight="bold" aria-hidden />
+                    <span className="sr-only">Change profile photo</span>
+                  </label>
+                  <input
+                    id="avatar-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="sr-only"
+                    disabled={profileSubmitting}
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-caption-strong text-foreground">{avatar ? avatar.name : "Profile photo"}</p>
+                  {avatar ? (
+                    <button
+                      type="button"
+                      onClick={() => setAvatar(null)}
+                      className="mt-0.5 inline-flex items-center gap-1 text-fine-print font-semibold text-accent hover:underline"
+                    >
+                      <X size={12} weight="bold" aria-hidden />
+                      Remove selection
+                    </button>
+                  ) : (
+                    <p className="text-fine-print text-muted-foreground">JPG or PNG. Click the photo to change it.</p>
+                  )}
+                </div>
+              </div>
+              <TextField
+                label="Name"
+                autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={() => setNameError(validateName(name) || "")}
+                error={!!nameError}
+                helperText={nameError}
+                disabled={profileSubmitting}
+                fullWidth
+              />
+              <TextField label="Email" value={user.email} disabled fullWidth helperText="Your email can't be changed." />
+              <div className="flex justify-end">
+                <Button type="submit" variant="contained" loading={profileSubmitting}>
+                  {profileSubmitting ? "Saving…" : "Save profile"}
+                </Button>
+              </div>
+            </form>
+          </Panel>
+
+          <Panel id="appearance" icon={Palette} title="Appearance" description="Choose how MiniTube looks on this device" className="scroll-mt-20">
+            <div role="radiogroup" aria-label="Theme" className="grid gap-sm sm:grid-cols-2">
+              {(["dark", "light"] as const).map((option) => {
+                const active = mode === option;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => dispatch(setMode(option))}
+                    className={`flex items-center gap-sm rounded-md border p-sm text-left transition-colors duration-fast ${
+                      active ? "border-accent bg-accent-soft" : "border-border hover:border-foreground/25"
+                    }`}
+                  >
+                    <span
+                      aria-hidden
+                      className="flex h-12 w-20 shrink-0 flex-col gap-1 overflow-hidden rounded-sm border border-border p-1.5"
+                      style={{ background: colorTokens[option].background }}
+                    >
+                      <span className="h-1.5 w-10 rounded-full opacity-70" style={{ background: colorTokens[option].foreground }} />
+                      <span className="h-1.5 w-6 rounded-full" style={{ background: colorTokens[option].accent }} />
+                      <span className="mt-auto h-3 w-full rounded-[3px]" style={{ background: colorTokens[option].elevated }} />
+                    </span>
+                    <span className="flex-1">
+                      <span className="flex items-center gap-1.5 text-caption-strong capitalize text-foreground">
+                        {option === "dark" ? <Moon size={16} aria-hidden /> : <Sun size={16} aria-hidden />}
+                        {option}
+                      </span>
+                      <span className="text-fine-print text-muted-foreground">
+                        {option === "dark" ? "Easy on the eyes, great for watching." : "Bright and crisp for daytime."}
+                      </span>
+                    </span>
+                    {active && <CheckCircle size={20} weight="fill" className="shrink-0 text-accent" aria-hidden />}
+                  </button>
+                );
+              })}
+            </div>
+          </Panel>
+
+          <Panel
+            id="security"
+            icon={LockKey}
+            title="Change password"
+            description="Choose a strong password you don't use elsewhere"
+            className="scroll-mt-20"
+          >
+            <form onSubmit={handlePasswordSubmit} noValidate className="flex flex-col gap-md">
+              {passwordError && <FormAlert>{passwordError}</FormAlert>}
+              <PasswordField
+                label="Current password"
+                autoComplete="current-password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                onBlur={() => currentPassword && setCurrentPasswordError(validateRequired(currentPassword, "Current password") || "")}
+                error={!!currentPasswordError}
+                helperText={currentPasswordError}
+                disabled={passwordSubmitting}
+                fullWidth
+              />
+              <div className="grid gap-md sm:grid-cols-2">
+                <PasswordField
+                  label="New password"
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  onBlur={() => newPassword && setNewPasswordError(validatePassword(newPassword) || "")}
+                  error={!!newPasswordError}
+                  helperText={newPasswordError || "8+ characters with upper, lower and a number"}
+                  disabled={passwordSubmitting}
+                  fullWidth
+                />
+                <PasswordField
+                  label="Confirm new password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onBlur={() =>
+                    confirmPassword &&
+                    setConfirmPasswordError(validateMatch(confirmPassword, newPassword, "New password and confirmation") || "")
+                  }
+                  error={!!confirmPasswordError}
+                  helperText={confirmPasswordError}
+                  disabled={passwordSubmitting}
+                  fullWidth
                 />
               </div>
-              <div>
-                <p className="text-caption-strong text-foreground dark:text-foreground-dark">
-                  {avatar ? avatar.name : "Profile photo"}
-                </p>
-                {avatar ? (
-                  <button
-                    type="button"
-                    onClick={() => setAvatar(null)}
-                    className="flex items-center gap-xxs text-fine-print text-accent hover:underline"
-                  >
-                    <X size={12} weight="bold" />
-                    Remove selection
-                  </button>
-                ) : (
-                  <p className="text-fine-print text-muted-foreground dark:text-muted-foreground-dark">
-                    Click the avatar to change it
-                  </p>
-                )}
+              <div className="flex justify-end">
+                <Button type="submit" variant="contained" loading={passwordSubmitting}>
+                  {passwordSubmitting ? "Updating…" : "Update password"}
+                </Button>
               </div>
-            </div>
-            <TextField
-              label="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onBlur={() => setNameError(validateName(name) || "")}
-              error={!!nameError}
-              helperText={nameError}
-              disabled={profileSubmitting}
-              fullWidth
-            />
-            {profileError && (
-              <p className="text-fine-print font-medium text-destructive dark:text-destructive-dark">{profileError}</p>
-            )}
-            <div>
-              <Button type="submit" variant="contained" disabled={profileSubmitting}>
-                {profileSubmitting ? "Saving..." : "Save profile"}
-              </Button>
-            </div>
-          </form>
-        </SettingsSection>
+            </form>
+          </Panel>
 
-        <SettingsSection
-          icon={<LockKey size={20} weight="bold" />}
-          title="Change password"
-          description="Choose a strong password you don't use elsewhere"
-        >
-          <form onSubmit={handlePasswordSubmit} noValidate className="flex flex-col gap-md">
-            <PasswordField
-              label="Current password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              onBlur={() => setCurrentPasswordError(validateRequired(currentPassword, "Current password") || "")}
-              error={!!currentPasswordError}
-              helperText={currentPasswordError}
-              disabled={passwordSubmitting}
-              fullWidth
-            />
-            <PasswordField
-              label="New password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              onBlur={() => setNewPasswordError(validatePassword(newPassword) || "")}
-              error={!!newPasswordError}
-              helperText={newPasswordError}
-              disabled={passwordSubmitting}
-              fullWidth
-            />
-            <PasswordField
-              label="Confirm new password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              onBlur={() =>
-                setConfirmPasswordError(validateMatch(confirmPassword, newPassword, "New password and confirmation") || "")
-              }
-              error={!!confirmPasswordError}
-              helperText={confirmPasswordError}
-              disabled={passwordSubmitting}
-              fullWidth
-            />
-            {passwordError && (
-              <p className="text-fine-print font-medium text-destructive dark:text-destructive-dark">{passwordError}</p>
-            )}
-            <div>
-              <Button type="submit" variant="contained" disabled={passwordSubmitting}>
-                {passwordSubmitting ? "Updating..." : "Update password"}
-              </Button>
+          <Panel
+            id="notifications"
+            icon={BellRinging}
+            title="Notifications"
+            description="Choose what you get emailed about"
+            className="scroll-mt-20"
+          >
+            <div className="flex flex-col divide-y divide-border">
+              {NOTIFICATION_OPTIONS.map(({ key, label, description }) => (
+                <Switch
+                  key={key}
+                  className="!ml-0 !flex !justify-between !gap-md !py-sm"
+                  labelPlacement="start"
+                  checked={user[key]}
+                  onChange={() => handleToggle(key)}
+                  label={label}
+                  description={description}
+                />
+              ))}
             </div>
-          </form>
-        </SettingsSection>
-
-        <SettingsSection
-          icon={<BellRinging size={20} weight="bold" />}
-          title="Notifications"
-          description="Choose what you get emailed about"
-        >
-          <div className="flex flex-col divide-y divide-border dark:divide-border-dark">
-            {NOTIFICATION_OPTIONS.map(({ key, label, description }) => (
-              <Switch
-                key={key}
-                className="!ml-0 !flex !justify-between !py-sm"
-                labelPlacement="start"
-                checked={user[key]}
-                onChange={() => handleToggle(key)}
-                label={label}
-                description={description}
-              />
-            ))}
-          </div>
-        </SettingsSection>
+          </Panel>
+        </div>
       </div>
     </div>
   );

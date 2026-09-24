@@ -90,7 +90,7 @@ function Badge({
         ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
         : state === "disabled"
           ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300"
-          : "bg-muted text-muted-foreground dark:bg-muted-dark dark:text-muted-foreground-dark";
+          : "bg-muted text-muted-foreground";
 
   return (
     <span className={`inline-flex whitespace-nowrap rounded-sm px-2 py-1 text-fine-print font-semibold capitalize ${color}`}>
@@ -105,7 +105,7 @@ function MoreButton({ onClick }: { onClick: (event: MouseEvent<HTMLElement>) => 
       size="small"
       aria-label="More actions"
       onClick={onClick}
-      className="!rounded-md !text-muted-foreground transition-colors hover:!bg-accent/10 hover:!text-accent dark:!text-muted-foreground-dark"
+      className="!rounded-md !text-muted-foreground transition-colors hover:!bg-accent/10 hover:!text-accent"
     >
       <DotsThreeVertical size={19} weight="bold" />
     </IconButton>
@@ -268,7 +268,7 @@ export default function AdminDashboard() {
 
   const navigation = (
     <nav className="flex h-full flex-col p-3">
-      <p className="px-3 pb-3 pt-2 text-fine-print font-semibold uppercase text-muted-foreground dark:text-muted-foreground-dark">
+      <p className="px-3 pb-3 pt-2 text-fine-print font-semibold uppercase text-muted-foreground">
         Admin
       </p>
       <div className="space-y-1">
@@ -280,7 +280,7 @@ export default function AdminDashboard() {
             className={`flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-caption-strong transition-colors ${
               section === id
                 ? "bg-accent/10 text-accent dark:bg-accent/15"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground dark:text-muted-foreground-dark dark:hover:bg-muted-dark dark:hover:text-foreground-dark"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
             <Icon size={19} weight={section === id ? "fill" : "regular"} />
@@ -290,7 +290,7 @@ export default function AdminDashboard() {
       </div>
       <Link
         to="/"
-        className="mt-auto flex items-center gap-3 border-t border-border px-3 pt-4 text-caption-strong text-muted-foreground hover:text-foreground dark:border-border-dark dark:text-muted-foreground-dark dark:hover:text-foreground-dark"
+        className="mt-auto flex items-center gap-3 border-t border-border px-3 pt-4 text-caption-strong text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft size={19} />
         Back to MiniTube
@@ -315,9 +315,9 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-93px)] bg-background dark:bg-background-dark">
+    <div className="min-h-[calc(100vh-93px)] bg-background">
       <div className="mx-auto grid w-full max-w-[1400px] desktop:grid-cols-[220px_minmax(0,1fr)]">
-        <aside className="sticky top-[93px] hidden h-[calc(100vh-93px)] border-r border-border bg-card desktop:block dark:border-border-dark dark:bg-card-dark">
+        <aside className="sticky top-[93px] hidden h-[calc(100vh-93px)] border-r border-border bg-card desktop:block">
           {navigation}
         </aside>
 
@@ -325,7 +325,7 @@ export default function AdminDashboard() {
           anchor="left"
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          PaperProps={{ className: "w-[min(280px,86vw)] bg-card dark:bg-card-dark" }}
+          PaperProps={{ className: "w-[min(280px,86vw)] bg-card" }}
         >
           {navigation}
         </Drawer>
@@ -341,10 +341,10 @@ export default function AdminDashboard() {
                 <List size={22} />
               </IconButton>
               <div className="min-w-0">
-                <h1 className="text-tagline text-foreground sm:text-[28px] sm:leading-tight dark:text-foreground-dark">
+                <h1 className="text-tagline text-foreground sm:text-[28px] sm:leading-tight">
                   {section === "overview" ? "Admin Dashboard" : current?.title}
                 </h1>
-                <p className="mt-1 text-caption text-muted-foreground dark:text-muted-foreground-dark">
+                <p className="mt-1 text-caption text-muted-foreground">
                   {section === "overview"
                     ? "Manage users, content, and moderation from one focused workspace."
                     : current?.description}
@@ -352,7 +352,7 @@ export default function AdminDashboard() {
               </div>
             </div>
             {current && (
-              <span className="hidden pt-2 text-caption text-muted-foreground sm:block dark:text-muted-foreground-dark">
+              <span className="hidden pt-2 text-caption text-muted-foreground sm:block">
                 {filteredRows.length} results
               </span>
             )}
@@ -403,7 +403,7 @@ export default function AdminDashboard() {
                 creatorOptions={creatorOptions}
               />
 
-              <section className="overflow-hidden rounded-md border border-border bg-card shadow-sm dark:border-border-dark dark:bg-card-dark">
+              <section className="overflow-hidden rounded-md border border-border bg-card shadow-sm">
                 {pagedRows.length === 0 ? (
                   <EmptyState message="No results match these filters." />
                 ) : (
@@ -411,7 +411,7 @@ export default function AdminDashboard() {
                 )}
 
                 {pagedRows.length > 0 && pages > 1 && (
-                  <div className="flex items-center justify-between border-t border-border px-4 py-3 text-caption text-muted-foreground dark:border-border-dark dark:text-muted-foreground-dark">
+                  <div className="flex items-center justify-between border-t border-border px-4 py-3 text-caption text-muted-foreground">
                     <span>
                       Page {safePage} of {pages}
                     </span>
@@ -506,12 +506,12 @@ function Overview({
             key={label}
             type="button"
             onClick={() => onPick(section)}
-            className="flex min-h-28 flex-col justify-between rounded-md border border-border bg-card p-4 text-left transition hover:border-accent/40 hover:shadow-sm dark:border-border-dark dark:bg-card-dark"
+            className="flex min-h-28 flex-col justify-between rounded-md border border-border bg-card p-4 text-left transition hover:border-accent/40 hover:shadow-sm"
           >
             <Icon size={20} className="text-accent" weight="duotone" />
             <div>
-              <p className="text-caption text-muted-foreground dark:text-muted-foreground-dark">{label}</p>
-              <p className="mt-1 text-tagline text-foreground dark:text-foreground-dark">{value.toLocaleString()}</p>
+              <p className="text-caption text-muted-foreground">{label}</p>
+              <p className="mt-1 text-tagline text-foreground">{value.toLocaleString()}</p>
             </div>
           </button>
         ))}
@@ -578,16 +578,16 @@ function OverviewPanel({
   children: ReactNode;
 }) {
   return (
-    <section className={`border-t border-border pt-4 dark:border-border-dark ${className}`}>
+    <section className={`border-t border-border pt-4 ${className}`}>
       <div className="mb-1 flex items-center justify-between gap-3">
-        <h2 className="text-body-strong text-foreground dark:text-foreground-dark">{title}</h2>
+        <h2 className="text-body-strong text-foreground">{title}</h2>
         {action && (
           <button type="button" className="text-caption-strong text-accent" onClick={onAction}>
             {action}
           </button>
         )}
       </div>
-      <div className="divide-y divide-border dark:divide-border-dark">{children}</div>
+      <div className="divide-y divide-border">{children}</div>
     </section>
   );
 }
@@ -606,8 +606,8 @@ function ActivityRow({
   return (
     <div className="flex min-w-0 items-center justify-between gap-3 py-3">
       <div className="min-w-0">
-        <p className="truncate text-caption-strong text-foreground dark:text-foreground-dark">{title}</p>
-        <p className="mt-1 truncate text-fine-print text-muted-foreground dark:text-muted-foreground-dark">
+        <p className="truncate text-caption-strong text-foreground">{title}</p>
+        <p className="mt-1 truncate text-fine-print text-muted-foreground">
           {detail} · {meta}
         </p>
       </div>
@@ -617,7 +617,7 @@ function ActivityRow({
 }
 
 function EmptyInline({ message }: { message: string }) {
-  return <p className="py-4 text-caption text-muted-foreground dark:text-muted-foreground-dark">{message}</p>;
+  return <p className="py-4 text-caption text-muted-foreground">{message}</p>;
 }
 
 function SelectControl({
@@ -637,7 +637,7 @@ function SelectControl({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-10 w-full rounded-md border border-border bg-card px-3 text-caption text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 sm:w-auto dark:border-border-dark dark:bg-card-dark dark:text-foreground-dark"
+        className="h-10 w-full rounded-md border border-border bg-card px-3 text-caption text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 sm:w-auto"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -697,7 +697,7 @@ function AdminControls({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={placeholder}
-          className="h-10 w-full rounded-md border border-border bg-card pl-10 pr-3 text-caption text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 dark:border-border-dark dark:bg-card-dark dark:text-foreground-dark"
+          className="h-10 w-full rounded-md border border-border bg-card pl-10 pr-3 text-caption text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/10"
         />
       </label>
 
@@ -820,7 +820,7 @@ function AdminRows({
             </tr>
           ))}
         />
-        <div className="divide-y divide-border md:hidden dark:divide-border-dark">
+        <div className="divide-y divide-border md:hidden">
           {items.map((user) => (
             <article key={user.id} className="p-4">
               <div className="flex gap-3">
@@ -828,8 +828,8 @@ function AdminRows({
                   {user.name[0]?.toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-body-strong text-foreground dark:text-foreground-dark">{user.name}</p>
-                  <p className="truncate text-caption text-muted-foreground dark:text-muted-foreground-dark">{user.email}</p>
+                  <p className="truncate text-body-strong text-foreground">{user.name}</p>
+                  <p className="truncate text-caption text-muted-foreground">{user.email}</p>
                 </div>
                 <MoreButton onClick={(event) => openMenu(event, { type: "user", item: user })} />
               </div>
@@ -837,7 +837,7 @@ function AdminRows({
                 <Badge>{user.role}</Badge>
                 <Badge state={user.disabled ? "disabled" : "active"}>{user.disabled ? "Disabled" : "Active"}</Badge>
               </div>
-              <p className="mt-3 text-fine-print text-muted-foreground dark:text-muted-foreground-dark">
+              <p className="mt-3 text-fine-print text-muted-foreground">
                 Joined {formatDate(user.createdAt)}
               </p>
             </article>
@@ -966,8 +966,8 @@ function ResponsiveTable({
 }) {
   return (
     <div className="hidden overflow-x-auto md:block">
-      <table className="w-full table-fixed text-left text-caption text-foreground dark:text-foreground-dark">
-        <thead className="border-b border-border bg-muted/50 text-fine-print uppercase text-muted-foreground dark:border-border-dark dark:bg-muted-dark/50 dark:text-muted-foreground-dark">
+      <table className="w-full table-fixed text-left text-caption text-foreground">
+        <thead className="border-b border-border bg-muted/50 text-fine-print uppercase text-muted-foreground">
           <tr>
             {headers.map((header) => {
               const label = typeof header === "string" ? header : header.label;
@@ -982,7 +982,7 @@ function ResponsiveTable({
             <th className="w-12" />
           </tr>
         </thead>
-        <tbody className="divide-y divide-border dark:divide-border-dark">{body}</tbody>
+        <tbody className="divide-y divide-border">{body}</tbody>
       </table>
     </div>
   );
@@ -990,7 +990,7 @@ function ResponsiveTable({
 
 function VideoThumb({ title }: { title: string }) {
   return (
-    <div className="flex aspect-video w-20 items-center justify-center rounded bg-muted text-accent dark:bg-muted-dark">
+    <div className="flex aspect-video w-20 items-center justify-center rounded bg-muted text-accent">
       <VideoCamera size={20} weight="duotone" aria-label={title} />
     </div>
   );
@@ -1006,7 +1006,7 @@ function MediaCards({
   kind: "video" | "comment" | "report";
 }) {
   return (
-    <div className="divide-y divide-border md:hidden dark:divide-border-dark">
+    <div className="divide-y divide-border md:hidden">
       {items.map((item) => (
         <article key={item.id} className="p-4">
           <div className="flex gap-3">
@@ -1014,13 +1014,13 @@ function MediaCards({
             <div className="min-w-0 flex-1">
               {kind === "video" && (
                 <>
-                  <p className="line-clamp-2 text-body-strong text-foreground dark:text-foreground-dark">
+                  <p className="line-clamp-2 text-body-strong text-foreground">
                     {(item as AdminVideo).title}
                   </p>
-                  <p className="mt-2 text-caption text-muted-foreground dark:text-muted-foreground-dark">
+                  <p className="mt-2 text-caption text-muted-foreground">
                     {(item as AdminVideo).creatorName} · {(item as AdminVideo).visibility}
                   </p>
-                  <p className="mt-1 text-fine-print text-muted-foreground dark:text-muted-foreground-dark">
+                  <p className="mt-1 text-fine-print text-muted-foreground">
                     {(item as AdminVideo).views.toLocaleString()} views · {formatDate(item.createdAt)}
                   </p>
                 </>
@@ -1028,13 +1028,13 @@ function MediaCards({
 
               {kind === "comment" && (
                 <>
-                  <p className="line-clamp-3 text-body-strong text-foreground dark:text-foreground-dark">
+                  <p className="line-clamp-3 text-body-strong text-foreground">
                     {(item as AdminComment).comment}
                   </p>
-                  <p className="mt-3 text-caption text-muted-foreground dark:text-muted-foreground-dark">
+                  <p className="mt-3 text-caption text-muted-foreground">
                     {(item as AdminComment).userName} · Video #{(item as AdminComment).videoId}
                   </p>
-                  <p className="mt-1 text-fine-print text-muted-foreground dark:text-muted-foreground-dark">
+                  <p className="mt-1 text-fine-print text-muted-foreground">
                     {formatDate(item.createdAt)}
                   </p>
                 </>
@@ -1042,13 +1042,13 @@ function MediaCards({
 
               {kind === "report" && (
                 <>
-                  <p className="line-clamp-2 text-body-strong text-foreground dark:text-foreground-dark">
+                  <p className="line-clamp-2 text-body-strong text-foreground">
                     {(item as AdminReport).videoTitle}
                   </p>
-                  <p className="mt-3 text-caption text-muted-foreground dark:text-muted-foreground-dark">
+                  <p className="mt-3 text-caption text-muted-foreground">
                     Reported by {(item as AdminReport).reporterName}
                   </p>
-                  <p className="mt-1 line-clamp-2 text-caption text-muted-foreground dark:text-muted-foreground-dark">
+                  <p className="mt-1 line-clamp-2 text-caption text-muted-foreground">
                     {(item as AdminReport).reason}
                   </p>
                   <div className="mt-2">

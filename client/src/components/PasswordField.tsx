@@ -19,9 +19,11 @@ export default function PasswordField(props: Omit<TextFieldProps, "type">) {
             <InputAdornment position="end">
               <IconButton
                 aria-label={visible ? "Hide password" : "Show password"}
+                aria-pressed={visible}
                 onClick={() => setVisible((v) => !v)}
                 edge="end"
-                tabIndex={-1}
+                size="small"
+                className="!text-muted-foreground hover:!text-foreground"
               >
                 {visible ? <EyeSlash size={20} /> : <Eye size={20} />}
               </IconButton>

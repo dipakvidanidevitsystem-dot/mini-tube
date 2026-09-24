@@ -22,36 +22,36 @@ export default function Dashboard() {
   const firstName = user?.name?.split(" ")[0] ?? "there";
 
   return (
-    <div className="mx-auto flex max-w-screen-2xl flex-col gap-md p-sm sm:gap-lg sm:p-md desktop:p-lg">
-      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+    <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-lg px-md pb-16 pt-lg sm:px-lg">
+      <header className="flex flex-wrap items-end justify-between gap-md">
         <div>
-          <h1 className="text-display-md text-foreground dark:text-foreground-dark">
-            {getGreeting()}, {firstName}.
+          <p className="text-fine-print font-semibold uppercase tracking-wider text-accent">Creator studio</p>
+          <h1 className="mt-1 text-display-md text-foreground">
+            {getGreeting()}, {firstName}
           </h1>
-          <p className="text-muted-foreground dark:text-muted-foreground-dark">Here's what's happening with your channel.</p>
+          <p className="mt-1 text-caption text-muted-foreground">Here&apos;s what&apos;s happening with your channel.</p>
         </div>
         <QuickActionLinks />
-      </div>
+      </header>
 
-      <div className="grid grid-cols-2 gap-sm sm:gap-md md:grid-cols-4">
+      <section aria-label="Key metrics" className="grid grid-cols-2 gap-sm sm:gap-md lg:grid-cols-4">
         {KPI_DEFS.map((def) => (
           <KpiCard key={def.key} def={def} stats={stats} isLoading={isLoading} isError={isError} />
         ))}
-      </div>
+      </section>
 
       <TopPerformerCard />
 
-      <div className="grid grid-cols-1 items-start gap-lg desktop:grid-cols-5">
-        <div className="flex flex-col gap-lg desktop:col-span-3">
+      <div className="grid grid-cols-1 items-start gap-lg desktop:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+        <div className="flex min-w-0 flex-col gap-lg">
           <ViewsChart />
-          <AudienceActivityPanel />
+          <RecentContentList />
         </div>
-        <div className="desktop:col-span-2">
+        <div className="flex min-w-0 flex-col gap-lg">
+          <AudienceActivityPanel />
           <RecentActivityPanel />
         </div>
       </div>
-
-      <RecentContentList />
     </div>
   );
 }

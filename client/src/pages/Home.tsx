@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Select from "../components/Select";
 import Button from "../components/Button";
-import LinearProgress from "@mui/material/LinearProgress";
 import Skeleton from "@mui/material/Skeleton";
-import { WarningCircle } from "@phosphor-icons/react";
+import { ArrowDown, MagnifyingGlass, WarningCircle } from "@phosphor-icons/react";
+import { Link } from "react-router-dom";
 import { useListVideosQuery, useSearchVideosQuery } from "../store/api/videosApi";
 import { getRtkErrorMessage } from "../store/lib/getRtkErrorMessage";
 import { CATEGORIES, SORT_OPTIONS } from "../constants";
@@ -26,10 +26,11 @@ function FilterChip({
     <button
       type="button"
       onClick={onClick}
-      className={`shrink-0 rounded-full border px-sm py-xxs text-button-utility transition-colors ${
+      aria-pressed={active}
+      className={`h-9 shrink-0 rounded-sm px-3.5 text-button-utility transition-colors duration-fast ${
         active
-          ? "border-accent bg-accent text-on-accent"
-          : "border-border text-foreground hover:border-accent/60 dark:border-border-dark dark:text-foreground-dark dark:hover:border-accent/60"
+          ? "bg-foreground text-background"
+          : "bg-muted text-foreground hover:bg-foreground/10"
       }`}
     >
       {label}
@@ -50,7 +51,7 @@ export default function Home() {
 
   const listResult = useListVideosQuery(params, { skip: !!query });
   const searchResult = useSearchVideosQuery({ q: query, ...params }, { skip: !query });
-  const { data, isFetching, isError, error } = query ? searchResult : listResult;
+  const { data, isFetching, isError, error, refetch } = query ? searchResult : listResult;
 
   // Reset accumulated items when filters/search change (back to page 1).
   useEffect(() => {
@@ -71,27 +72,61 @@ export default function Home() {
   const errorMessage = isError ? getRtkErrorMessage(error) : "";
   const total = data?.total ?? 0;
 
+  const chipBar = (
+    <div className="sticky top-16 z-20 -mx-md mb-md bg-background/85 px-md py-sm backdrop-blur-xl sm:-mx-lg sm:px-lg">
+      <div className="flex items-center gap-sm">
+        <div
+          role="group"
+          aria-label="Filter by category"
+          className="scrollbar-none -my-1 flex min-w-0 flex-1 items-center gap-xs overflow-x-auto py-1 [mask-image:linear-gradient(to_right,black_calc(100%-32px),transparent)]"
+        >
+          <FilterChip label="All" active={category === ""} onClick={() => setCategory("")} />
+          {CATEGORIES.map((c) => (
+            <FilterChip key={c} label={c} active={category === c} onClick={() => setCategory(c)} />
+          ))}
+        </div>
+        <Select
+          size="small"
+          dense
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortOption)}
+          className="shrink-0"
+          options={SORT_OPTIONS}
+          slotProps={{ htmlInput: { "aria-label": "Sort videos" } }}
+        />
+      </div>
+    </div>
+  );
+
+  const pageHeader = query ? (
+    <div className="mb-sm flex flex-wrap items-center gap-x-sm gap-y-1">
+      <h1 className="flex items-center gap-2 text-tagline text-foreground">
+        <MagnifyingGlass size={20} className="text-muted-foreground" aria-hidden />
+        Results for &ldquo;{query}&rdquo;
+      </h1>
+      {data && (
+        <span className="tabular text-caption text-muted-foreground">
+          {total.toLocaleString()} {total === 1 ? "video" : "videos"}
+        </span>
+      )}
+      <Link to="/" className="ml-auto text-caption-strong text-accent hover:underline">
+        Clear search
+      </Link>
+    </div>
+  ) : (
+    <h1 className="sr-only">Browse videos</h1>
+  );
+
   if (loading) {
     return (
-      <div className="p-md sm:p-lg pb-16">
-        <div className="mb-md">
-          <Skeleton variant="text" width={160} sx={{ fontSize: "2rem" }} />
-          <Skeleton variant="text" width={220} sx={{ fontSize: "0.875rem" }} />
-        </div>
-        <div className="mb-md flex flex-wrap items-center gap-sm">
-          <Skeleton variant="rounded" width={40} height={28} sx={{ borderRadius: "9999px" }} />
-          {CATEGORIES.map((c) => (
-            <Skeleton
-              key={c}
-              variant="rounded"
-              width={Math.min(40 + c.length * 6, 100)}
-              height={28}
-              sx={{ borderRadius: "9999px" }}
-            />
+      <div className="px-md pb-16 pt-xs sm:px-lg">
+        {pageHeader}
+        <div className="mb-md flex items-center gap-xs overflow-hidden py-sm">
+          {[48, ...CATEGORIES.map((c) => Math.min(44 + c.length * 7, 110))].map((w, i) => (
+            <Skeleton key={i} variant="rounded" width={w} height={36} className="shrink-0" />
           ))}
-          <Skeleton variant="rounded" width={110} height={32} className="ml-auto" />
         </div>
-        <VideoGridSkeleton />
+        <VideoGridSkeleton count={12} />
       </div>
     );
   }
@@ -100,7 +135,7 @@ export default function Home() {
     return (
       <ErrorState
         message="We couldn't load videos right now. Please check your connection and try again."
-        onRetry={() => setPage(1)}
+        onRetry={refetch}
       />
     );
   }
@@ -108,59 +143,46 @@ export default function Home() {
   const hasMore = allItems.length < total;
 
   return (
-    <div className="p-md sm:p-lg pb-16">
-      {query ? (
-        <h1 className="mb-lg text-body-strong text-foreground dark:text-foreground-dark">
-          Search results for &quot;{query}&quot;
-        </h1>
-      ) : (
-        <div className="mb-md">
-          <h1 className="text-display-md text-foreground dark:text-foreground-dark">Browse</h1>
-          <p className="text-caption text-muted-foreground dark:text-muted-foreground-dark">
-            Explore videos across MiniTube.
-          </p>
-        </div>
-      )}
-
-      <div className="mb-md flex flex-nowrap items-center gap-sm overflow-x-auto pb-1 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden">
-        <FilterChip label="All" active={category === ""} onClick={() => setCategory("")} />
-        {CATEGORIES.map((c) => (
-          <FilterChip key={c} label={c} active={category === c} onClick={() => setCategory(c)} />
-        ))}
-        <Select
-          size="small"
-          dense
-          value={sort}
-          onChange={(e) => setSort(e.target.value as SortOption)}
-          className="ml-auto shrink-0"
-          options={SORT_OPTIONS}
-        />
-      </div>
-
-      <div className="mb-2 h-1">{loading && <LinearProgress />}</div>
+    <div className="px-md pb-16 pt-xs sm:px-lg">
+      {pageHeader}
+      {chipBar}
 
       {errorMessage && allItems.length > 0 && (
-        <div className="mb-md flex items-center gap-xxs rounded-lg border border-destructive/30 bg-destructive/5 px-sm py-xxs text-fine-print font-medium text-destructive dark:border-destructive-dark/30 dark:bg-destructive-dark/10 dark:text-destructive-dark">
-          <WarningCircle size={16} weight="bold" />
+        <div
+          role="alert"
+          className="mb-md flex items-center gap-xs rounded-md border border-destructive/30 bg-destructive/5 px-sm py-xs text-fine-print font-medium text-destructive"
+        >
+          <WarningCircle size={16} weight="bold" aria-hidden />
           Couldn't refresh results: {errorMessage}
         </div>
       )}
 
-      <div className={loading ? "pointer-events-none opacity-60 transition-opacity" : "transition-opacity"}>
+      <div
+        aria-busy={isFetching}
+        className={`transition-opacity duration-enter ${isFetching && !loadingMore ? "pointer-events-none opacity-60" : ""}`}
+      >
         <VideoGrid
           videos={allItems}
-          showAvatar={false}
           emptyMessage={
-            query || category ? `No results found. Try a different search or category.` : "No videos to show yet."
+            query || category ? "No results found. Try a different search or category." : "No videos to show yet."
           }
         />
       </div>
 
       {hasMore && (
-        <div className="mt-xl flex justify-center">
-          <Button variant="outlined" onClick={() => setPage((p) => p + 1)} disabled={loadingMore}>
-            {loadingMore ? "Loading..." : "Load more"}
+        <div className="mt-xl flex flex-col items-center gap-xs">
+          <Button
+            variant="outlined"
+            onClick={() => setPage((p) => p + 1)}
+            loading={loadingMore}
+            startIcon={<ArrowDown size={16} />}
+            className="!rounded-full !px-6"
+          >
+            {loadingMore ? "Loading…" : "Load more"}
           </Button>
+          <p className="tabular text-fine-print text-muted-foreground">
+            Showing {allItems.length.toLocaleString()} of {total.toLocaleString()}
+          </p>
         </div>
       )}
     </div>

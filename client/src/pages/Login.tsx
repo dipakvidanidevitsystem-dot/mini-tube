@@ -5,6 +5,8 @@ import Button from "../components/Button";
 import { useLoginMutation } from "../store/api/authApi";
 import { getRtkErrorMessage } from "../store/lib/getRtkErrorMessage";
 import PasswordField from "../components/PasswordField";
+import AuthLayout from "../components/AuthLayout";
+import FormAlert from "../components/FormAlert";
 import { validateEmail, validateRequired } from "../lib/validation";
 
 export default function Login() {
@@ -24,7 +26,10 @@ export default function Login() {
     const nextPasswordError = validateRequired(password, "Password");
     setEmailError(nextEmailError || "");
     setPasswordError(nextPasswordError || "");
-    if (nextEmailError || nextPasswordError) return;
+    if (nextEmailError || nextPasswordError) {
+      document.getElementById(nextEmailError ? "login-email" : "login-password")?.focus();
+      return;
+    }
 
     try {
       await login({ email, password }).unwrap();
@@ -35,40 +40,59 @@ export default function Login() {
   };
 
   return (
-    <div className="mx-auto mt-16 max-w-sm">
-      <h1 className="mb-6 text-2xl font-semibold">Log in</h1>
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Sign in to pick up where you left off."
+      footer={
+        <>
+          New to MiniTube?{" "}
+          <Link to="/register" className="font-semibold text-accent hover:underline">
+            Create an account
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-md">
+        {error && <FormAlert>{error}</FormAlert>}
         <TextField
+          id="login-email"
           label="Email"
-          type="text"
+          type="email"
           inputMode="email"
+          autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          onBlur={() => setEmailError(validateEmail(email) || "")}
+          onBlur={() => email && setEmailError(validateEmail(email) || "")}
           error={!!emailError}
           helperText={emailError}
           disabled={submitting}
+          required
+          fullWidth
         />
-        <PasswordField
-          label="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          onBlur={() => setPasswordError(validateRequired(password, "Password") || "")}
-          error={!!passwordError}
-          helperText={passwordError}
-          disabled={submitting}
-        />
-        {error && <p className="text-sm font-medium text-foreground dark:text-foreground-dark">{error}</p>}
-        <Button type="submit" variant="contained" disabled={submitting}>
-          Log in
+        <div>
+          <PasswordField
+            id="login-password"
+            label="Password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onBlur={() => password && setPasswordError(validateRequired(password, "Password") || "")}
+            error={!!passwordError}
+            helperText={passwordError}
+            disabled={submitting}
+            required
+            fullWidth
+          />
+          <div className="mt-xs text-right">
+            <Link to="/forgot-password" className="text-caption-strong text-accent hover:underline">
+              Forgot password?
+            </Link>
+          </div>
+        </div>
+        <Button type="submit" variant="contained" size="large" loading={submitting} fullWidth>
+          {submitting ? "Signing in…" : "Sign in"}
         </Button>
       </form>
-      <p className="mt-4 text-sm">
-        No account? <Link to="/register">Register</Link>
-      </p>
-      <p className="mt-2 text-sm">
-        <Link to="/forgot-password">Forgot password?</Link>
-      </p>
-    </div>
+    </AuthLayout>
   );
 }

@@ -3,13 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0B0D12" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F7F8FA" media="(prefers-color-scheme: light)" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
+    <!-- Pre-paint: apply the stored/system mode before React mounts to avoid a light flash.
+         Mirrors readInitialMode() in src/store/slices/themeSlice.ts; colors mirror src/theme/tokens.ts. -->
+    <script>
+      (function () {
+        try {
+          var m = localStorage.getItem("themeMode");
+          if (m !== "light" && m !== "dark") m = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          document.documentElement.classList.toggle("dark", m === "dark");
+          document.documentElement.setAttribute("data-theme", m);
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      html { background: #F7F8FA; }
+      html.dark { background: #0B0D12; }
+    </style>
     <title>MiniTube</title>
   </head>
   <body>

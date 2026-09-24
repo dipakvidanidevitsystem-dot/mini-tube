@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from "react";
-import TextField from "./TextField";
-import Button from "./Button";
+import { Link } from "react-router-dom";
+import { ChatCircleDots } from "@phosphor-icons/react";
+import CommentComposer from "./CommentComposer";
 import {
   useListCommentsQuery,
   useAddCommentMutation,
@@ -84,36 +85,46 @@ export default function CommentList({ videoId }: { videoId: string | number }) {
   };
 
   return (
-    <div>
-      <h2 className="font-medium mb-3">Comments ({comments.length})</h2>
+    <section aria-labelledby="comments-heading">
+      <h2 id="comments-heading" className="mb-md flex items-center gap-2 text-tagline text-foreground">
+        Comments
+        <span className="tabular rounded-full bg-muted px-2 py-0.5 text-fine-print font-semibold text-muted-foreground">
+          {comments.length}
+        </span>
+      </h2>
 
-      {user && (
-        <form onSubmit={handleSubmit} noValidate className="flex items-start gap-2 mb-4">
-          <TextField
-            size="small"
-            fullWidth
-            placeholder="Add a comment..."
+      {user ? (
+        <div className="mb-md">
+          <CommentComposer
+            avatarSrc={user.profileImage}
+            avatarLabel={user.name}
             value={text}
-            onChange={(e) => setText(e.target.value)}
-            error={!!textError}
-            helperText={textError}
-            disabled={submitting}
+            onChange={(value) => {
+              setText(value);
+              if (textError) setTextError("");
+            }}
+            error={textError || error}
+            submitting={submitting}
+            onSubmit={handleSubmit}
           />
-          <Button type="submit" variant="contained" disabled={submitting}>
-            Post
-          </Button>
-        </form>
+        </div>
+      ) : (
+        <p className="mb-md rounded-md border border-dashed border-border px-md py-sm text-caption text-muted-foreground">
+          <Link to="/login" className="font-semibold text-accent hover:underline">
+            Sign in
+          </Link>{" "}
+          to join the conversation.
+        </p>
       )}
-      {error && <p className="mb-2 text-sm font-medium text-foreground dark:text-foreground-dark">{error}</p>}
 
       {loading ? (
-        <Loading />
+        <Loading label="Loading comments" />
       ) : hasLoadError ? (
         <ErrorState message="We couldn't load comments. Please try again." onRetry={refetch} />
       ) : topLevel.length === 0 ? (
-        <EmptyState message="No comments yet. Be the first to comment." />
+        <EmptyState icon={ChatCircleDots} message="No comments yet. Be the first to share your thoughts." />
       ) : (
-        <div className="divide-y divide-border dark:divide-border-dark">
+        <ul className="divide-y divide-border">
           {topLevel.map((comment) => (
             <Comment
               key={comment.id}
@@ -124,8 +135,8 @@ export default function CommentList({ videoId }: { videoId: string | number }) {
               onReply={handleReply}
             />
           ))}
-        </div>
+        </ul>
       )}
-    </div>
+    </section>
   );
 }

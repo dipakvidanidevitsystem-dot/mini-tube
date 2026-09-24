@@ -1,16 +1,21 @@
 import Skeleton from "@mui/material/Skeleton";
 
+/** Shared responsive grid so skeletons and real cards occupy identical tracks (no layout shift). */
+export const VIDEO_GRID_CLASS =
+  "grid grid-cols-1 gap-x-md gap-y-lg xs:grid-cols-2 lg:grid-cols-3 desktop:grid-cols-4 wide:grid-cols-5";
+
+export const MY_VIDEO_GRID_CLASS = "grid gap-x-md gap-y-lg [grid-template-columns:repeat(auto-fill,minmax(280px,1fr))]";
+
 export default function VideoCardSkeleton() {
   return (
-    <div>
-      <Skeleton variant="rectangular" className="aspect-video w-full rounded-lg" />
-      <div className="mt-2 flex gap-2">
-        <Skeleton variant="circular" width={36} height={36} className="shrink-0" />
+    <div aria-hidden>
+      <Skeleton variant="rounded" className="!aspect-video !h-auto w-full !rounded-lg" />
+      <div className="mt-sm flex gap-sm">
+        <Skeleton variant="circular" width={36} height={36} className="mt-0.5 shrink-0" />
         <div className="min-w-0 flex-1">
-          <Skeleton variant="text" sx={{ fontSize: "1rem" }} width="95%" />
-          <Skeleton variant="text" sx={{ fontSize: "1rem" }} width="60%" />
-          <Skeleton variant="text" sx={{ fontSize: "0.875rem" }} width="40%" />
-          <Skeleton variant="text" sx={{ fontSize: "0.875rem" }} width="55%" />
+          <Skeleton variant="text" sx={{ fontSize: "16px" }} width="92%" />
+          <Skeleton variant="text" sx={{ fontSize: "16px" }} width="58%" />
+          <Skeleton variant="text" sx={{ fontSize: "14px" }} width="40%" />
         </div>
       </div>
     </div>
@@ -19,7 +24,7 @@ export default function VideoCardSkeleton() {
 
 export function VideoGridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 gap-lg sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+    <div className={VIDEO_GRID_CLASS} role="status" aria-label="Loading videos">
       {Array.from({ length: count }).map((_, i) => (
         <VideoCardSkeleton key={i} />
       ))}
@@ -29,11 +34,11 @@ export function VideoGridSkeleton({ count = 8 }: { count?: number }) {
 
 export function MyVideoCardSkeleton() {
   return (
-    <div>
-      <Skeleton variant="rectangular" className="aspect-video w-full rounded-lg" />
-      <div className="mt-2">
-        <Skeleton variant="text" sx={{ fontSize: "1rem" }} width="90%" />
-        <Skeleton variant="text" sx={{ fontSize: "0.875rem" }} width="45%" />
+    <div aria-hidden>
+      <Skeleton variant="rounded" className="!aspect-video !h-auto w-full !rounded-lg" />
+      <div className="mt-sm">
+        <Skeleton variant="text" sx={{ fontSize: "16px" }} width="88%" />
+        <Skeleton variant="text" sx={{ fontSize: "14px" }} width="45%" />
       </div>
     </div>
   );
@@ -41,7 +46,7 @@ export function MyVideoCardSkeleton() {
 
 export function MyVideoGridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <div className="grid gap-lg [grid-template-columns:repeat(auto-fill,minmax(300px,1fr))]">
+    <div className={MY_VIDEO_GRID_CLASS} role="status" aria-label="Loading videos">
       {Array.from({ length: count }).map((_, i) => (
         <MyVideoCardSkeleton key={i} />
       ))}

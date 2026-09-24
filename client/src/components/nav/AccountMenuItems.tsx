@@ -4,23 +4,27 @@ import MenuItem from "@mui/material/MenuItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
-import {
-  VideoCamera,
-  UploadSimple,
-  ClockCounterClockwise,
-  BookmarkSimple,
-  SquaresFour,
-  Gear,
-  ShieldCheck,
-  SignOut,
-  Sun,
-  Moon,
-} from "@phosphor-icons/react";
+import { SignOut, Sun, Moon } from "@phosphor-icons/react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { logout as logoutAction } from "../../store/slices/authSlice";
 import { toggleMode as toggleModeAction } from "../../store/slices/themeSlice";
 import { useLogoutMutation } from "../../store/api/authApi";
 import NotificationBell from "../NotificationBell";
+import { PRIMARY_NAV, STUDIO_NAV, type NavItem } from "./navItems";
+
+const byPath = (path: string) => [...PRIMARY_NAV, ...STUDIO_NAV].find((item) => item.to === path) as NavItem;
+
+function NavMenuItem({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
+  const Icon = item.icon;
+  return (
+    <MenuItem component={Link} to={item.to} onClick={onNavigate}>
+      <ListItemIcon className="!min-w-0 !text-muted-foreground">
+        <Icon size={20} aria-hidden />
+      </ListItemIcon>
+      <ListItemText>{item.label}</ListItemText>
+    </MenuItem>
+  );
+}
 
 export default function AccountMenuItems({
   onNavigate,
@@ -49,82 +53,49 @@ export default function AccountMenuItems({
 
   return (
     <>
+      <MenuItem component={Link} to={`/channel/${user.id}`} onClick={onNavigate}>
+        <ListItemIcon className="!min-w-0">
+          <Avatar sx={{ width: 22, height: 22, fontSize: 11 }} src={user.profileImage || undefined} alt="">
+            {user.name?.[0]?.toUpperCase()}
+          </Avatar>
+        </ListItemIcon>
+        <ListItemText>Your channel</ListItemText>
+      </MenuItem>
+      {includeNotifications && <NotificationBell variant="menuItem" onTriggerClick={onNavigate} />}
+
+      {(includePrimaryDestinations || includeHistory) && <Divider sx={{ my: 0.5 }} />}
+      {includePrimaryDestinations && (
+        <>
+          <NavMenuItem item={byPath("/my-videos")} onNavigate={onNavigate} />
+          <NavMenuItem item={byPath("/upload")} onNavigate={onNavigate} />
+          <NavMenuItem item={byPath("/watch-later")} onNavigate={onNavigate} />
+        </>
+      )}
+      {includeHistory && <NavMenuItem item={byPath("/history")} onNavigate={onNavigate} />}
+
+      <Divider sx={{ my: 0.5 }} />
+      <NavMenuItem item={byPath("/dashboard")} onNavigate={onNavigate} />
+      {user.role === "admin" && <NavMenuItem item={byPath("/admin")} onNavigate={onNavigate} />}
+      <NavMenuItem item={byPath("/settings")} onNavigate={onNavigate} />
+
       <MenuItem
         onClick={() => {
           dispatch(toggleModeAction());
           onNavigate();
         }}
-        sx={{ py: 0.75 }}
       >
-        <ListItemIcon>{mode === "dark" ? <Sun size={20} /> : <Moon size={20} />}</ListItemIcon>
-        <ListItemText>{mode === "dark" ? "Light Mode" : "Dark Mode"}</ListItemText>
-      </MenuItem>
-      {includeNotifications && <NotificationBell variant="menuItem" onTriggerClick={onNavigate} />}
-      <Divider className="my-1" />
-      <MenuItem component={Link} to={`/channel/${user.id}`} onClick={onNavigate} sx={{ py: 0.75 }}>
-        <ListItemIcon>
-          <Avatar sx={{ width: 20, height: 20 }} src={user.profileImage || undefined}>
-            {user.name?.[0]?.toUpperCase()}
-          </Avatar>
+        <ListItemIcon className="!min-w-0 !text-muted-foreground">
+          {mode === "dark" ? <Sun size={20} aria-hidden /> : <Moon size={20} aria-hidden />}
         </ListItemIcon>
-        <ListItemText>My Channel</ListItemText>
+        <ListItemText>{mode === "dark" ? "Light theme" : "Dark theme"}</ListItemText>
       </MenuItem>
-      {includePrimaryDestinations && (
-        <>
-          <MenuItem component={Link} to="/my-videos" onClick={onNavigate} sx={{ py: 0.75 }}>
-            <ListItemIcon>
-              <VideoCamera size={20} />
-            </ListItemIcon>
-            <ListItemText>My Videos</ListItemText>
-          </MenuItem>
-          <MenuItem component={Link} to="/upload" onClick={onNavigate} sx={{ py: 0.75 }}>
-            <ListItemIcon>
-              <UploadSimple size={20} />
-            </ListItemIcon>
-            <ListItemText>Upload</ListItemText>
-          </MenuItem>
-          <MenuItem component={Link} to="/watch-later" onClick={onNavigate} sx={{ py: 0.75 }}>
-            <ListItemIcon>
-              <BookmarkSimple size={20} weight="fill" />
-            </ListItemIcon>
-            <ListItemText>Watch Later</ListItemText>
-          </MenuItem>
-        </>
-      )}
-      {includeHistory && (
-        <MenuItem component={Link} to="/history" onClick={onNavigate} sx={{ py: 0.75 }}>
-          <ListItemIcon>
-            <ClockCounterClockwise size={20} />
-          </ListItemIcon>
-          <ListItemText>History</ListItemText>
-        </MenuItem>
-      )}
-      <MenuItem component={Link} to="/dashboard" onClick={onNavigate} sx={{ py: 0.75 }}>
-        <ListItemIcon>
-          <SquaresFour size={20} />
+
+      <Divider sx={{ my: 0.5 }} />
+      <MenuItem onClick={handleLogout} className="!text-destructive">
+        <ListItemIcon className="!min-w-0 !text-destructive">
+          <SignOut size={20} aria-hidden />
         </ListItemIcon>
-        <ListItemText>Dashboard</ListItemText>
-      </MenuItem>
-      {user.role === "admin" && (
-        <MenuItem component={Link} to="/admin" onClick={onNavigate} sx={{ py: 0.75 }}>
-          <ListItemIcon>
-            <ShieldCheck size={20} />
-          </ListItemIcon>
-          <ListItemText>Admin Dashboard</ListItemText>
-        </MenuItem>
-      )}
-      <MenuItem component={Link} to="/settings" onClick={onNavigate} sx={{ py: 0.75 }}>
-        <ListItemIcon>
-          <Gear size={20} />
-        </ListItemIcon>
-        <ListItemText>Settings</ListItemText>
-      </MenuItem>
-      <Divider className="my-1" />
-      <MenuItem onClick={handleLogout} sx={{ py: 0.75 }}>
-        <ListItemIcon>
-          <SignOut size={20} />
-        </ListItemIcon>
-        <ListItemText>Logout</ListItemText>
+        <ListItemText>Sign out</ListItemText>
       </MenuItem>
     </>
   );

@@ -2,14 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #fbf7f2; /* background token */
-  color: #0f0f23; /* foreground token */
+/* Color variables (--c-*) are injected by ThemeModeProvider from src/theme/tokens.ts. */
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    @apply bg-background font-sans text-body text-foreground antialiased;
+    font-feature-settings: "ss01";
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    @apply bg-accent/30 text-foreground;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--c-ring));
+    outline-offset: 2px;
+  }
+
+  button,
+  [role="button"],
+  a {
+    touch-action: manipulation;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--c-muted-foreground) / 0.35) transparent;
+  }
 }
 
-.dark body {
-  background-color: #000000; /* background-dark token */
-  color: #f8fafc; /* foreground-dark token */
+@layer components {
+  /* Heading font for token-sized display text used outside h1–h4. */
+  .text-display-md,
+  .text-display-lg,
+  .text-hero-display,
+  .text-tagline {
+    font-family: theme("fontFamily.heading");
+  }
+
+  .skip-link {
+    @apply fixed left-3 top-3 z-[100] -translate-y-16 rounded-md bg-accent-strong px-4 py-2 text-caption-strong text-on-accent shadow-float transition-transform duration-fast;
+  }
+
+  .skip-link:focus-visible {
+    @apply translate-y-0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

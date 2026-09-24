@@ -5,11 +5,9 @@ import MenuItem from "@mui/material/MenuItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Badge from "@mui/material/Badge";
-import Menu from "@mui/material/Menu";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
-import { Bell } from "@phosphor-icons/react";
+import Popover from "@mui/material/Popover";
+import Tooltip from "@mui/material/Tooltip";
+import { Bell, BellSimpleSlash, PlayCircle } from "@phosphor-icons/react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { markAllRead, clearAll } from "../store/slices/notificationsSlice";
 import dayjs from "../lib/dayjs";
@@ -29,6 +27,7 @@ export default function NotificationBell({
   const unreadCount = useAppSelector((state) => state.notifications.unreadCount);
   const dispatch = useAppDispatch();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const close = () => setAnchorEl(null);
 
   const handleOpen = (e: React.MouseEvent<HTMLElement>) => {
     onTriggerClick?.();
@@ -36,80 +35,98 @@ export default function NotificationBell({
     if (unreadCount > 0) dispatch(markAllRead());
   };
 
+  const label = unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications";
+
   return (
     <>
+      {/* Announces new notifications without moving focus. */}
+      <span className="sr-only" role="status" aria-live="polite">
+        {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}` : ""}
+      </span>
+
       {variant === "menuItem" ? (
-        <MenuItem onClick={handleOpen} sx={{ py: 0.75 }}>
+        <MenuItem onClick={handleOpen}>
           <ListItemIcon>
-            <Badge badgeContent={unreadCount} color="error" max={9}>
+            <Badge badgeContent={unreadCount} color="primary" max={9}>
               <Bell size={20} />
             </Badge>
           </ListItemIcon>
           <ListItemText>Notifications</ListItemText>
         </MenuItem>
       ) : (
-        <IconButton
-          aria-label="notifications"
-          onClick={handleOpen}
-          size="small"
-          className="!text-muted-foreground dark:!text-muted-foreground-dark"
-        >
-          <Badge badgeContent={unreadCount} color="error" max={9}>
-            <Bell size={18} />
-          </Badge>
-        </IconButton>
+        <Tooltip title="Notifications">
+          <IconButton
+            aria-label={label}
+            aria-haspopup="dialog"
+            aria-expanded={Boolean(anchorEl)}
+            onClick={handleOpen}
+            className="!text-muted-foreground hover:!text-foreground"
+          >
+            <Badge badgeContent={unreadCount} color="primary" max={9}>
+              <Bell size={20} weight={anchorEl ? "fill" : "regular"} />
+            </Badge>
+          </IconButton>
+        </Tooltip>
       )}
-      <Menu
+
+      <Popover
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
-        onClose={() => setAnchorEl(null)}
-        slotProps={{ paper: { className: "min-w-[320px] max-w-[380px]" } }}
+        onClose={close}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        slotProps={{ paper: { className: "!mt-2 w-[min(380px,calc(100vw-24px))]", role: "dialog", "aria-label": "Notifications" } }}
       >
-        <Box className="flex items-center justify-between px-3 py-2">
-          <Typography variant="subtitle2" fontWeight={600}>
-            Notifications
-          </Typography>
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <h2 className="text-body-strong text-foreground">Notifications</h2>
           {items.length > 0 && (
             <button
               type="button"
               onClick={() => dispatch(clearAll())}
-              className="text-fine-print text-accent hover:underline"
+              className="rounded-sm px-2 py-1 text-fine-print font-semibold text-accent transition-colors duration-fast hover:bg-accent-soft"
             >
               Clear all
             </button>
           )}
-        </Box>
-        <Divider />
+        </div>
+
         {items.length === 0 ? (
-          <Box className="px-3 py-6 text-center">
-            <Typography variant="body2" className="text-muted-foreground dark:text-muted-foreground-dark">
-              You're all caught up.
-            </Typography>
-          </Box>
+          <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <BellSimpleSlash size={22} aria-hidden />
+            </span>
+            <p className="text-caption-strong text-foreground">You're all caught up</p>
+            <p className="text-fine-print text-muted-foreground">New uploads and replies will show up here.</p>
+          </div>
         ) : (
-          <Box className="max-h-[360px] overflow-y-auto">
+          <ul className="max-h-[400px] overflow-y-auto p-1.5">
             {items.map((item) => {
               const content = (
-                <Box className="flex flex-col gap-0.5 px-3 py-2.5 hover:bg-muted dark:hover:bg-muted-dark">
-                  <Typography variant="body2" className="text-foreground dark:text-foreground-dark">
-                    {item.message}
-                  </Typography>
-                  <Typography variant="caption" className="text-muted-foreground dark:text-muted-foreground-dark">
-                    {timeAgo(item.createdAt)}
-                  </Typography>
-                </Box>
+                <div className="flex gap-3 rounded-md px-2.5 py-2.5 transition-colors duration-fast hover:bg-muted">
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
+                    <PlayCircle size={18} weight="fill" aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-caption text-foreground">{item.message}</p>
+                    <p className="mt-0.5 text-fine-print text-muted-foreground">{timeAgo(item.createdAt)}</p>
+                  </div>
+                </div>
               );
-              return item.videoId ? (
-                <Link key={item.id} to={`/watch/${item.videoId}`} onClick={() => setAnchorEl(null)} className="block">
-                  {content}
-                </Link>
-              ) : (
-                <Box key={item.id}>{content}</Box>
+              return (
+                <li key={item.id}>
+                  {item.videoId ? (
+                    <Link to={`/watch/${item.videoId}`} onClick={close} className="block rounded-md">
+                      {content}
+                    </Link>
+                  ) : (
+                    content
+                  )}
+                </li>
               );
             })}
-          </Box>
+          </ul>
         )}
-      </Menu>
+      </Popover>
     </>
   );
 }

@@ -6,6 +6,7 @@ import MenuItem from "@mui/material/MenuItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Tooltip from "@mui/material/Tooltip";
+import Divider from "@mui/material/Divider";
 import { DotsThreeVertical, Eye, PencilSimple, ShareNetwork, Trash } from "@phosphor-icons/react";
 import type { Video } from "../types";
 import { notifyApiError, notifySuccess } from "../lib/toast";
@@ -44,16 +45,17 @@ export default function MyVideoCard({
   return (
     <div className="group relative">
       <VideoCard video={video} showAvatar={false} showCreatorName={false} />
-      <div className="absolute left-2 top-2 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+      <div className="absolute bottom-2 left-2 opacity-100 transition-opacity duration-fast sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
         <Tooltip title="Video actions">
           <IconButton
             size="small"
-            aria-label="video actions"
+            aria-label={`Actions for ${video.title}`}
+            aria-haspopup="menu"
             onClick={(e) => {
               e.preventDefault();
               setAnchorEl(e.currentTarget);
             }}
-            className="!bg-black/35 !text-white backdrop-blur-sm transition-colors hover:!bg-black/70"
+            className="!h-9 !w-9 !bg-scrim/60 !text-on-scrim backdrop-blur-sm hover:!bg-scrim/80"
           >
             <DotsThreeVertical size={18} weight="bold" />
           </IconButton>
@@ -64,36 +66,36 @@ export default function MyVideoCard({
               closeMenu();
               navigate(`/watch/${video.id}`);
             }}
-            sx={{ py: 0.75 }}
           >
-            <ListItemIcon>
+            <ListItemIcon className="!text-muted-foreground">
               <Eye size={20} />
             </ListItemIcon>
             <ListItemText>View</ListItemText>
           </MenuItem>
-          <MenuItem component={Link} to={`/edit/${video.id}`} onClick={closeMenu} sx={{ py: 0.75 }}>
-            <ListItemIcon>
+          <MenuItem component={Link} to={`/edit/${video.id}`} onClick={closeMenu}>
+            <ListItemIcon className="!text-muted-foreground">
               <PencilSimple size={20} />
             </ListItemIcon>
             <ListItemText>Edit</ListItemText>
           </MenuItem>
-          <MenuItem onClick={handleShare} sx={{ py: 0.75 }}>
-            <ListItemIcon>
+          <MenuItem onClick={handleShare}>
+            <ListItemIcon className="!text-muted-foreground">
               <ShareNetwork size={20} />
             </ListItemIcon>
             <ListItemText>Share</ListItemText>
           </MenuItem>
+          <Divider sx={{ my: 0.5 }} />
           <MenuItem
             onClick={() => {
               closeMenu();
               onDeleteClick(video);
             }}
-            sx={{ py: 0.75 }}
+            className="!text-destructive"
           >
-            <ListItemIcon>
-              <Trash size={20} className="text-destructive dark:text-destructive-dark" />
+            <ListItemIcon className="!text-destructive">
+              <Trash size={20} />
             </ListItemIcon>
-            <ListItemText className="text-destructive dark:text-destructive-dark">Delete</ListItemText>
+            <ListItemText>Delete</ListItemText>
           </MenuItem>
         </Menu>
       </div>

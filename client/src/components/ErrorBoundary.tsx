@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { ArrowClockwise, WarningOctagon } from "@phosphor-icons/react";
 import Button from "./Button";
 
 interface Props {
@@ -23,15 +24,25 @@ export default class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-4 text-center">
-          <h1 className="text-xl font-semibold">Something went wrong on this page</h1>
-          <p className="text-gray-500">
-            We hit an unexpected problem displaying this page. Please refresh and try again.
-          </p>
-          <Button variant="contained" onClick={() => window.location.reload()}>
-            Reload page
-          </Button>
-        </div>
+        <main role="alert" className="flex min-h-dvh items-center justify-center bg-background p-4">
+          <div className="flex max-w-md flex-col items-center gap-sm rounded-xl border border-border bg-card p-xl text-center">
+            <span className="mb-xs flex h-16 w-16 items-center justify-center rounded-xl bg-destructive/10 text-destructive ring-1 ring-inset ring-destructive/20">
+              <WarningOctagon size={30} weight="duotone" aria-hidden />
+            </span>
+            <h1 className="text-display-md text-foreground">Something went wrong</h1>
+            <p className="text-caption text-muted-foreground">
+              We hit an unexpected problem displaying this page. Reload to try again.
+            </p>
+            <Button
+              variant="contained"
+              onClick={() => window.location.reload()}
+              startIcon={<ArrowClockwise size={18} />}
+              className="!mt-xs"
+            >
+              Reload page
+            </Button>
+          </div>
+        </main>
       );
     }
 
