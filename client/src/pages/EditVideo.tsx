@@ -68,7 +68,7 @@ export default function EditVideo() {
 
   return (
     <div className="mx-auto mt-8 max-w-lg p-4">
-      <h1 className="mb-6 text-2xl font-semibold">Edit video</h1>
+      <h1 className="font-display mb-6 text-2xl font-semibold">Edit video</h1>
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <TextField
           label="Title"

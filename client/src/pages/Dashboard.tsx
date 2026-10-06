@@ -25,7 +25,7 @@ export default function Dashboard() {
     <div className="mx-auto flex max-w-screen-2xl flex-col gap-md p-sm sm:gap-lg sm:p-md desktop:p-lg">
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div>
-          <h1 className="text-display-md text-foreground dark:text-foreground-dark">
+          <h1 className="font-display text-display-md text-foreground dark:text-foreground-dark">
             {getGreeting()}, {firstName}.
           </h1>
           <p className="text-muted-foreground dark:text-muted-foreground-dark">Here's what's happening with your channel.</p>

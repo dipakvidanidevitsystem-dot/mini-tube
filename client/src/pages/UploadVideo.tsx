@@ -98,7 +98,7 @@ export default function UploadVideo() {
   return (
     <div className="mx-auto max-w-screen-2xl p-md sm:p-lg">
       <div className="mb-lg">
-        <h1 className="text-display-md text-foreground dark:text-foreground-dark">Upload video</h1>
+        <h1 className="font-display text-display-md text-foreground dark:text-foreground-dark">Upload video</h1>
         <p className="text-caption text-muted-foreground dark:text-muted-foreground-dark">
           Share your next video with your audience.
         </p>
@@ -119,7 +119,7 @@ export default function UploadVideo() {
           />
 
           <div className="flex flex-col gap-xs">
-            <h2 className="text-caption-strong text-foreground dark:text-foreground-dark">Thumbnail</h2>
+            <h2 className="font-display text-caption-strong text-foreground dark:text-foreground-dark">Thumbnail</h2>
             {videoPreviewUrl && (
               <div className="overflow-hidden rounded-lg border border-border bg-muted dark:border-border-dark dark:bg-muted-dark">
                 <video src={videoPreviewUrl} muted preload="metadata" className="aspect-video w-full object-cover" />
@@ -140,7 +140,7 @@ export default function UploadVideo() {
 
         <div className="flex flex-col gap-lg desktop:col-span-2">
           <div className="flex flex-col gap-md">
-            <h2 className="text-caption-strong text-foreground dark:text-foreground-dark">Video details</h2>
+            <h2 className="font-display text-caption-strong text-foreground dark:text-foreground-dark">Video details</h2>
 
             <TextField
               label="Title"
@@ -172,7 +172,7 @@ export default function UploadVideo() {
           </div>
 
           <div className="flex flex-col gap-xs">
-            <h2 className="text-caption-strong text-foreground dark:text-foreground-dark">Visibility</h2>
+            <h2 className="font-display text-caption-strong text-foreground dark:text-foreground-dark">Visibility</h2>
             <ToggleButtonGroup
               value={visibility}
               exclusive
@@ -203,7 +203,7 @@ export default function UploadVideo() {
             <div className="flex flex-col gap-1.5 rounded-lg border border-border bg-card p-3 dark:border-border-dark dark:bg-card-dark">
               <div className="flex items-center justify-between text-caption-strong text-foreground dark:text-foreground-dark">
                 <span className="flex items-center gap-1.5">
-                  <UploadSimple size={18} className="text-accent" />
+                  <UploadSimple size={18} className="text-accent dark:text-accent-dark" />
                   {uploadFinished ? "Processing…" : "Uploading…"}
                 </span>
                 <span>{progress}%</span>
@@ -219,7 +219,7 @@ export default function UploadVideo() {
 
           {phase === "done" && (
             <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-3 text-caption-strong text-foreground dark:border-border-dark dark:bg-card-dark dark:text-foreground-dark">
-              <CheckCircle size={20} weight="fill" className="text-accent" />
+              <CheckCircle size={20} weight="fill" className="text-accent dark:text-accent-dark" />
               Upload complete — taking you to your video…
             </div>
           )}

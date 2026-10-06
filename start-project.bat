@@ -1,5 +1,5 @@
 @echo off
-title MERN-Youtube Launcher
+title Dipak Studio Launcher
 
 echo Starting all services...
 

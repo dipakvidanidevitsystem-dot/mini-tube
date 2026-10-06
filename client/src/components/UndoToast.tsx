@@ -36,7 +36,8 @@ export default function UndoToast({
       <Button
         size="small"
         onClick={onUndo}
-        sx={{ color: "#fff", fontWeight: 600, minWidth: "auto" }}
+        className="!text-background"
+        sx={{ fontWeight: 600, minWidth: "auto" }}
       >
         Undo ({remaining}s)
       </Button>

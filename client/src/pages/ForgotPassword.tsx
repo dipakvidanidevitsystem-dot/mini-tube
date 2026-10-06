@@ -31,7 +31,7 @@ export default function ForgotPassword() {
 
   return (
     <div className="mx-auto mt-16 max-w-sm">
-      <h1 className="mb-6 text-2xl font-semibold">Forgot password</h1>
+      <h1 className="font-display mb-6 text-2xl font-semibold">Forgot password</h1>
 
       {message ? (
         <p className="text-sm text-foreground dark:text-foreground-dark">{message}</p>

@@ -199,7 +199,7 @@ export default function VideoPlayer({
             style={{ width: duration ? `${(buffered / duration) * 100}%` : "0%" }}
           />
           <div
-            className="absolute inset-y-0 left-0 rounded-full bg-accent"
+            className="absolute inset-y-0 left-0 rounded-full bg-accent dark:bg-accent-dark"
             style={{ width: duration ? `${(currentTime / duration) * 100}%` : "0%" }}
           />
           <input

@@ -22,7 +22,7 @@ export default function WatchLater() {
 
   return (
     <div className="p-4">
-      <h1 className="mb-4 text-2xl font-semibold">Watch Later</h1>
+      <h1 className="font-display mb-4 text-2xl font-semibold">Saved</h1>
       <VideoGrid videos={videos} emptyMessage="You haven't saved any videos yet." />
     </div>
   );

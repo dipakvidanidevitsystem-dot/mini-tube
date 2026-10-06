@@ -24,8 +24,8 @@ export default class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-4 text-center">
-          <h1 className="text-xl font-semibold">Something went wrong on this page</h1>
-          <p className="text-gray-500">
+          <h1 className="font-display text-xl font-semibold">Something went wrong on this page</h1>
+          <p className="text-muted-foreground dark:text-muted-foreground-dark">
             We hit an unexpected problem displaying this page. Please refresh and try again.
           </p>
           <Button variant="contained" onClick={() => window.location.reload()}>

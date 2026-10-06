@@ -21,7 +21,7 @@ export default function VideoCard({
 }) {
   return (
     <Link to={`/watch/${video.id}`} className="block group">
-      <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border/60 bg-muted transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md dark:border-border-dark/60 dark:bg-muted-dark">
+      <div className="relative aspect-video w-full overflow-hidden rounded-lg border-[1.5px] border-border bg-muted transition-[transform,box-shadow] duration-150 group-hover:-translate-y-0.5 group-hover:shadow-ink-sm dark:border-border-dark dark:bg-muted-dark dark:group-hover:shadow-ink-sm-dark">
         {video.thumbnailUrl && (
           <img
             src={video.thumbnailUrl}
@@ -35,7 +35,7 @@ export default function VideoCard({
         )}
         {video.processingStatus === "ready" && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-200 group-hover:bg-black/20 group-hover:opacity-100">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-primary shadow-md">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full border-[1.5px] border-foreground bg-card/90 text-foreground dark:border-black dark:bg-card-dark/90 dark:text-foreground-dark">
               <Play size={22} weight="fill" />
             </span>
           </div>
@@ -58,7 +58,7 @@ export default function VideoCard({
           </span>
         )}
         {isFeatured && (
-          <span className="absolute left-2 top-2 rounded bg-white/90 px-2 py-0.5 text-xs font-semibold text-primary shadow-sm">
+          <span className="absolute left-2 top-2 rounded bg-card/90 px-2 py-0.5 text-xs font-semibold text-foreground dark:bg-card-dark/90 dark:text-foreground-dark">
             Featured
           </span>
         )}

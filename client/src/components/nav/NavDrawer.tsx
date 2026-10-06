@@ -68,7 +68,7 @@ export default function NavDrawer({ open, onClose }: { open: boolean; onClose: (
             <ListItemIcon>
               <BookmarkSimple size={20} weight="fill" />
             </ListItemIcon>
-            <ListItemText>Watch Later</ListItemText>
+            <ListItemText>Saved</ListItemText>
           </ListItemButton>
         </List>
         <Divider />

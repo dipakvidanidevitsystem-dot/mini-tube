@@ -170,7 +170,7 @@ export default function WatchVideo() {
     if (!id) return;
     try {
       const result = await toggleSaved(id).unwrap();
-      notifySuccess(result.saved ? "Saved to Watch Later." : "Removed from Watch Later.");
+      notifySuccess(result.saved ? "Saved." : "Removed from Saved.");
     } catch (err) {
       notifyApiError(err);
     }
@@ -210,7 +210,7 @@ export default function WatchVideo() {
     setReportSubmitting(true);
     try {
       await reportVideo({ id, reason: reportReason.trim() }).unwrap();
-      notifySuccess("Report submitted. Thank you for helping keep MiniTube safe.");
+      notifySuccess("Report submitted. Thank you for helping keep Dipak Studio safe.");
       setReportOpen(false);
       setReportReason("");
     } catch (err) {
@@ -251,7 +251,7 @@ export default function WatchVideo() {
       </div>
 
       <div className="px-md">
-        <h1 className="mt-md text-tagline">{video.title}</h1>
+        <h1 className="font-display mt-md text-tagline">{video.title}</h1>
 
         {video.processingStatus !== "ready" && (
           <p className="mt-1 text-sm text-muted-foreground dark:text-muted-foreground-dark">
@@ -317,7 +317,7 @@ export default function WatchVideo() {
                   <div className="min-w-0">
                     <p className="truncate text-caption-strong">{channel.name}</p>
                     <p className="text-caption text-muted-foreground dark:text-muted-foreground-dark">
-                      {channel.subscriberCount.toLocaleString()} subscribers
+                      {channel.subscriberCount.toLocaleString()} {channel.subscriberCount === 1 ? "follower" : "followers"}
                     </p>
                   </div>
                 </Link>
@@ -326,7 +326,7 @@ export default function WatchVideo() {
                     variant={channel.isSubscribed ? "outlined" : "contained"}
                     onClick={handleSubscribe}
                   >
-                    {channel.isSubscribed ? "Subscribed" : "Subscribe"}
+                    {channel.isSubscribed ? "Following" : "Follow"}
                   </Button>
                 )}
               </div>

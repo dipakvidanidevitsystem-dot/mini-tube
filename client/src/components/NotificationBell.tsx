@@ -73,7 +73,7 @@ export default function NotificationBell({
             <button
               type="button"
               onClick={() => dispatch(clearAll())}
-              className="text-fine-print text-accent hover:underline"
+              className="text-fine-print text-accent dark:text-accent-dark hover:underline"
             >
               Clear all
             </button>

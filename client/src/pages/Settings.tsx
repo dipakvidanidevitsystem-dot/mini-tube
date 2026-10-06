@@ -19,8 +19,8 @@ import { NAME_MAX, validateMatch, validateMaxLength, validatePassword, validateR
 const NOTIFICATION_OPTIONS: { key: keyof NotificationPreferences; label: string; description: string }[] = [
   {
     key: "notifyNewSubscriber",
-    label: "New subscribers",
-    description: "Email me when someone subscribes to my channel",
+    label: "New followers",
+    description: "Email me when someone follows my channel",
   },
   {
     key: "notifyVideoUploaded",
@@ -51,13 +51,13 @@ function SettingsSection({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-border bg-card p-lg dark:border-border-dark dark:bg-card-dark">
+    <section className="rounded-lg border-[1.5px] border-border bg-card p-lg dark:border-border-dark dark:bg-card-dark">
       <div className="mb-lg flex items-center gap-sm">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 dark:bg-accent-dark/10 text-accent dark:text-accent-dark">
           {icon}
         </span>
         <div>
-          <h2 className="text-body-strong text-foreground dark:text-foreground-dark">{title}</h2>
+          <h2 className="font-display text-body-strong text-foreground dark:text-foreground-dark">{title}</h2>
           <p className="text-fine-print text-muted-foreground dark:text-muted-foreground-dark">{description}</p>
         </div>
       </div>
@@ -165,7 +165,7 @@ export default function Settings() {
   return (
     <div className="mx-auto mt-8 max-w-2xl px-4 pb-16">
       <div className="mb-lg">
-        <h1 className="text-display-md text-foreground dark:text-foreground-dark">Settings</h1>
+        <h1 className="font-display text-display-md text-foreground dark:text-foreground-dark">Settings</h1>
         <p className="mt-xxs text-body text-muted-foreground dark:text-muted-foreground-dark">
           Manage your profile, security, and notification preferences.
         </p>
@@ -209,7 +209,7 @@ export default function Settings() {
                   <button
                     type="button"
                     onClick={() => setAvatar(null)}
-                    className="flex items-center gap-xxs text-fine-print text-accent hover:underline"
+                    className="flex items-center gap-xxs text-fine-print text-accent dark:text-accent-dark hover:underline"
                   >
                     <X size={12} weight="bold" />
                     Remove selection

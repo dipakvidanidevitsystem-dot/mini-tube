@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 
-const BRAND_COLOR = "#dc2626";
+const BRAND_COLOR = "#8A5A2B";
 const TEXT_COLOR = "#1a1a1a";
 const MUTED_COLOR = "#52525b";
 const BORDER_COLOR = "#e4e4e7";
@@ -50,7 +50,7 @@ function layout({ preheader, heading, bodyHtml, ctaLabel, ctaUrl }: LayoutOption
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>${heading} · MiniTube</title>
+    <title>${heading} · Dipak Studio</title>
   </head>
   <body style="margin: 0; padding: 0; background-color: ${PAGE_BG};">
     <span style="display: none; visibility: hidden; opacity: 0; overflow: hidden; height: 0; width: 0; max-height: 0; max-width: 0; mso-hide: all;">
@@ -70,7 +70,7 @@ function layout({ preheader, heading, bodyHtml, ctaLabel, ctaUrl }: LayoutOption
           >
             <tr>
               <td style="padding: 28px 40px 12px;">
-                <span style="font-size: 20px; font-weight: 800; color: ${BRAND_COLOR}; letter-spacing: -0.02em;">MiniTube</span>
+                <span style="font-family: Georgia, 'Times New Roman', serif; font-size: 22px; font-weight: 700; font-style: italic; color: ${BRAND_COLOR}; letter-spacing: -0.01em;">Dipak Studio</span>
               </td>
             </tr>
             <tr>
@@ -97,11 +97,11 @@ function layout({ preheader, heading, bodyHtml, ctaLabel, ctaUrl }: LayoutOption
               <td
                 style="padding: 16px 40px 28px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; line-height: 1.6; color: ${MUTED_COLOR};"
               >
-                You're receiving this email because of activity on your MiniTube account.
+                You're receiving this email because of activity on your Dipak Studio account.
                 <a href="${process.env.CLIENT_URL}/settings" style="color: ${MUTED_COLOR}; text-decoration: underline;">Manage email preferences</a>
                 to control which notifications you get.
                 <br />
-                © ${dayjs().year()} MiniTube. All rights reserved.
+                © ${dayjs().year()} Dipak Studio. All rights reserved.
               </td>
             </tr>
           </table>

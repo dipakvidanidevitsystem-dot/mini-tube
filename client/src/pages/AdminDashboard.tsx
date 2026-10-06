@@ -89,7 +89,7 @@ function Badge({
       : state === "pending"
         ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
         : state === "disabled"
-          ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300"
+          ? "bg-destructive/10 text-destructive dark:bg-destructive-dark/10 dark:text-destructive-dark"
           : "bg-muted text-muted-foreground dark:bg-muted-dark dark:text-muted-foreground-dark";
 
   return (
@@ -105,7 +105,7 @@ function MoreButton({ onClick }: { onClick: (event: MouseEvent<HTMLElement>) => 
       size="small"
       aria-label="More actions"
       onClick={onClick}
-      className="!rounded-md !text-muted-foreground transition-colors hover:!bg-accent/10 hover:!text-accent dark:!text-muted-foreground-dark"
+      className="!rounded-md !text-muted-foreground transition-colors hover:!bg-accent/10 dark:hover:!bg-accent-dark/10 hover:!text-accent dark:hover:!text-accent-dark dark:!text-muted-foreground-dark"
     >
       <DotsThreeVertical size={19} weight="bold" />
     </IconButton>
@@ -279,7 +279,7 @@ export default function AdminDashboard() {
             onClick={() => pickSection(id)}
             className={`flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-caption-strong transition-colors ${
               section === id
-                ? "bg-accent/10 text-accent dark:bg-accent/15"
+                ? "bg-accent/10 text-accent dark:bg-accent-dark/15 dark:text-accent-dark"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground dark:text-muted-foreground-dark dark:hover:bg-muted-dark dark:hover:text-foreground-dark"
             }`}
           >
@@ -293,7 +293,7 @@ export default function AdminDashboard() {
         className="mt-auto flex items-center gap-3 border-t border-border px-3 pt-4 text-caption-strong text-muted-foreground hover:text-foreground dark:border-border-dark dark:text-muted-foreground-dark dark:hover:text-foreground-dark"
       >
         <ArrowLeft size={19} />
-        Back to MiniTube
+        Back to Dipak Studio
       </Link>
     </nav>
   );
@@ -341,7 +341,7 @@ export default function AdminDashboard() {
                 <List size={22} />
               </IconButton>
               <div className="min-w-0">
-                <h1 className="text-tagline text-foreground sm:text-[28px] sm:leading-tight dark:text-foreground-dark">
+                <h1 className="font-display text-tagline text-foreground sm:text-[28px] sm:leading-tight dark:text-foreground-dark">
                   {section === "overview" ? "Admin Dashboard" : current?.title}
                 </h1>
                 <p className="mt-1 text-caption text-muted-foreground dark:text-muted-foreground-dark">
@@ -403,7 +403,7 @@ export default function AdminDashboard() {
                 creatorOptions={creatorOptions}
               />
 
-              <section className="overflow-hidden rounded-md border border-border bg-card shadow-sm dark:border-border-dark dark:bg-card-dark">
+              <section className="overflow-hidden rounded-lg border-[1.5px] border-border bg-card dark:border-border-dark dark:bg-card-dark">
                 {pagedRows.length === 0 ? (
                   <EmptyState message="No results match these filters." />
                 ) : (
@@ -506,9 +506,9 @@ function Overview({
             key={label}
             type="button"
             onClick={() => onPick(section)}
-            className="flex min-h-28 flex-col justify-between rounded-md border border-border bg-card p-4 text-left transition hover:border-accent/40 hover:shadow-sm dark:border-border-dark dark:bg-card-dark"
+            className="flex min-h-28 flex-col justify-between rounded-lg border-[1.5px] border-border bg-card p-4 text-left transition-[border-color,box-shadow] duration-150 hover:border-accent/40 dark:hover:border-accent-dark/40 hover:shadow-ink-sm dark:hover:shadow-ink-sm-dark dark:border-border-dark dark:bg-card-dark"
           >
-            <Icon size={20} className="text-accent" weight="duotone" />
+            <Icon size={20} className="text-accent dark:text-accent-dark" weight="duotone" />
             <div>
               <p className="text-caption text-muted-foreground dark:text-muted-foreground-dark">{label}</p>
               <p className="mt-1 text-tagline text-foreground dark:text-foreground-dark">{value.toLocaleString()}</p>
@@ -580,9 +580,9 @@ function OverviewPanel({
   return (
     <section className={`border-t border-border pt-4 dark:border-border-dark ${className}`}>
       <div className="mb-1 flex items-center justify-between gap-3">
-        <h2 className="text-body-strong text-foreground dark:text-foreground-dark">{title}</h2>
+        <h2 className="font-display text-body-strong text-foreground dark:text-foreground-dark">{title}</h2>
         {action && (
-          <button type="button" className="text-caption-strong text-accent" onClick={onAction}>
+          <button type="button" className="text-caption-strong text-accent dark:text-accent-dark" onClick={onAction}>
             {action}
           </button>
         )}
@@ -637,7 +637,7 @@ function SelectControl({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-10 w-full rounded-md border border-border bg-card px-3 text-caption text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 sm:w-auto dark:border-border-dark dark:bg-card-dark dark:text-foreground-dark"
+        className="h-10 w-full rounded-md border border-border bg-card px-3 text-caption text-foreground outline-none focus:border-accent dark:focus:border-accent-dark focus:ring-2 focus:ring-accent/10 dark:focus:ring-accent-dark/10 sm:w-auto dark:border-border-dark dark:bg-card-dark dark:text-foreground-dark"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -697,7 +697,7 @@ function AdminControls({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={placeholder}
-          className="h-10 w-full rounded-md border border-border bg-card pl-10 pr-3 text-caption text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 dark:border-border-dark dark:bg-card-dark dark:text-foreground-dark"
+          className="h-10 w-full rounded-md border border-border bg-card pl-10 pr-3 text-caption text-foreground outline-none focus:border-accent dark:focus:border-accent-dark focus:ring-2 focus:ring-accent/10 dark:focus:ring-accent-dark/10 dark:border-border-dark dark:bg-card-dark dark:text-foreground-dark"
         />
       </label>
 
@@ -824,7 +824,7 @@ function AdminRows({
           {items.map((user) => (
             <article key={user.id} className="p-4">
               <div className="flex gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary-light text-caption-strong text-secondary">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary-light text-caption-strong text-on-secondary-light dark:bg-secondary-light-dark dark:text-on-secondary-light-dark">
                   {user.name[0]?.toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -990,7 +990,7 @@ function ResponsiveTable({
 
 function VideoThumb({ title }: { title: string }) {
   return (
-    <div className="flex aspect-video w-20 items-center justify-center rounded bg-muted text-accent dark:bg-muted-dark">
+    <div className="flex aspect-video w-20 items-center justify-center rounded bg-muted text-accent dark:text-accent-dark dark:bg-muted-dark">
       <VideoCamera size={20} weight="duotone" aria-label={title} />
     </div>
   );

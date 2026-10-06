@@ -35,7 +35,7 @@ export default function Channel() {
     if (!channel) return;
     try {
       const result = await toggleSubscribe(channel.id).unwrap();
-      notifySuccess(result.subscribed ? "Subscribed to this channel." : "Unsubscribed from this channel.");
+      notifySuccess(result.subscribed ? "Following this channel." : "Unfollowed this channel.");
     } catch (err) {
       notifyApiError(err);
     }
@@ -85,10 +85,8 @@ export default function Channel() {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-lg px-4 py-lg sm:px-6 sm:py-xl">
-      <section className="overflow-hidden rounded-lg border border-border bg-card dark:border-border-dark dark:bg-card-dark">
-        <div className="h-28 bg-secondary bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.08)_0,rgba(255,255,255,0.08)_1px,transparent_1px,transparent_16px)] sm:h-36">
-          <div className="h-full w-full bg-[linear-gradient(90deg,rgba(15,15,35,0.14),transparent_65%)]" />
-        </div>
+      <section className="overflow-hidden rounded-lg border-[1.5px] border-border bg-card dark:border-border-dark dark:bg-card-dark">
+        <div className="h-28 border-b-[1.5px] border-border bg-accent-soft sm:h-36 dark:border-border-dark dark:bg-accent-soft-dark" />
 
         <div className="-mt-10 flex flex-col gap-md px-4 pb-lg sm:-mt-12 sm:flex-row sm:items-end sm:justify-between sm:px-6">
           <div className="flex flex-col items-center gap-sm text-center sm:flex-row sm:items-end sm:text-left">
@@ -100,9 +98,9 @@ export default function Channel() {
               {channel.name?.[0]?.toUpperCase()}
             </Avatar>
             <div className="min-w-0 pb-1">
-              <h1 className="break-words text-display-md text-foreground dark:text-foreground-dark">{channel.name}</h1>
+              <h1 className="break-words font-display text-display-md text-foreground dark:text-foreground-dark">{channel.name}</h1>
               <p className="mt-1 text-caption text-muted-foreground dark:text-muted-foreground-dark">
-                {pluralize(channel.subscriberCount, "subscriber")} &middot; {pluralize(channel.videoCount, "video")} &middot;{" "}
+                {pluralize(channel.subscriberCount, "follower")} &middot; {pluralize(channel.videoCount, "video")} &middot;{" "}
                 {pluralize(totalViews, "total view")}
               </p>
             </div>
@@ -116,7 +114,7 @@ export default function Channel() {
             ) : (
               user && (
                 <Button variant={channel.isSubscribed ? "outlined" : "contained"} onClick={handleSubscribe}>
-                  {channel.isSubscribed ? "Subscribed" : "Subscribe"}
+                  {channel.isSubscribed ? "Following" : "Follow"}
                 </Button>
               )
             )}
@@ -147,8 +145,8 @@ export default function Channel() {
             <section className="grid gap-md border-b border-border pb-lg dark:border-border-dark md:grid-cols-[minmax(0,1.2fr)_minmax(260px,0.8fr)] md:items-center">
               <VideoCard video={featuredVideo} showDetails={false} isFeatured />
               <div className="flex min-w-0 flex-col justify-center gap-xs md:py-sm">
-                <p className="text-caption-strong uppercase tracking-wide text-accent">Featured</p>
-                <h2 className="line-clamp-2 text-tagline text-foreground dark:text-foreground-dark">{featuredVideo.title}</h2>
+                <p className="text-caption-strong uppercase tracking-wide text-accent dark:text-accent-dark">Featured</p>
+                <h2 className="font-display line-clamp-2 text-tagline text-foreground dark:text-foreground-dark">{featuredVideo.title}</h2>
                 <p className="text-caption text-muted-foreground dark:text-muted-foreground-dark">
                   {pluralize(featuredVideo.views, "view")} &middot; {formatDate(featuredVideo.createdAt)}
                 </p>
@@ -163,7 +161,7 @@ export default function Channel() {
 
           <section className="flex flex-col gap-md">
             <div className="flex flex-col gap-sm md:flex-row md:items-center md:justify-between">
-              <h2 className="text-tagline text-foreground dark:text-foreground-dark">Videos</h2>
+              <h2 className="font-display text-tagline text-foreground dark:text-foreground-dark">Videos</h2>
               <div className="flex flex-col gap-sm sm:flex-row sm:items-center">
                 <label className="relative block min-w-0 sm:w-64">
                   <MagnifyingGlass
@@ -174,14 +172,14 @@ export default function Channel() {
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder="Search this channel"
-                    className="h-10 w-full rounded-md border border-border bg-card pl-10 pr-3 text-caption text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-border-dark dark:bg-card-dark dark:text-foreground-dark dark:focus:border-ring-dark"
+                    className="h-10 w-full rounded-md border border-border bg-card pl-10 pr-3 text-caption text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 dark:focus:ring-primary-dark/10 dark:border-border-dark dark:bg-card-dark dark:text-foreground-dark dark:focus:border-ring-dark"
                   />
                 </label>
 
                 <select
                   value={sortBy}
                   onChange={(event) => setSortBy(event.target.value as ChannelSort)}
-                  className="h-10 rounded-md border border-border bg-card px-3 text-caption text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-border-dark dark:bg-card-dark dark:text-foreground-dark dark:focus:border-ring-dark"
+                  className="h-10 rounded-md border border-border bg-card px-3 text-caption text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 dark:focus:ring-primary-dark/10 dark:border-border-dark dark:bg-card-dark dark:text-foreground-dark dark:focus:border-ring-dark"
                   aria-label="Sort channel videos"
                 >
                   <option value="recent">Recently added</option>
@@ -218,7 +216,7 @@ export default function Channel() {
         </>
       ) : (
         <section className="max-w-2xl py-sm">
-          <h2 className="text-tagline text-foreground dark:text-foreground-dark">About</h2>
+          <h2 className="font-display text-tagline text-foreground dark:text-foreground-dark">About</h2>
           <div className="mt-md space-y-sm text-caption text-foreground dark:text-foreground-dark">
             <p className="text-body-strong">{channel.name}</p>
             <p className="max-w-xl text-muted-foreground dark:text-muted-foreground-dark">
@@ -226,7 +224,7 @@ export default function Channel() {
             </p>
             <p>Joined {formatDate(channel.createdAt)}</p>
             <p className="text-muted-foreground dark:text-muted-foreground-dark">
-              {pluralize(channel.videoCount, "video")} &middot; {pluralize(channel.subscriberCount, "subscriber")}
+              {pluralize(channel.videoCount, "video")} &middot; {pluralize(channel.subscriberCount, "follower")}
             </p>
           </div>
         </section>

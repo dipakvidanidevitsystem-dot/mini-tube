@@ -57,8 +57,12 @@ export default function Navbar() {
             <ListIcon size={20} />
           </IconButton>
         )}
-        <Link to="/" className="shrink-0 text-lg font-bold text-accent sm:text-xl">
-          MiniTube
+        <Link
+          to="/"
+          aria-label="Dipak Studio home"
+          className="inline-block shrink-0 -rotate-[1.5deg] font-display text-lg font-semibold italic text-foreground sm:text-xl dark:text-foreground-dark"
+        >
+          Dipak <span className="text-accent dark:text-accent-dark">Studio</span>
         </Link>
       </div>
 

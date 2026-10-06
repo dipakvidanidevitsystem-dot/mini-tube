@@ -87,7 +87,7 @@ export default function AccountMenuItems({
             <ListItemIcon>
               <BookmarkSimple size={20} weight="fill" />
             </ListItemIcon>
-            <ListItemText>Watch Later</ListItemText>
+            <ListItemText>Saved</ListItemText>
           </MenuItem>
         </>
       )}

@@ -22,7 +22,7 @@ function TabLink({
       to={to}
       className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-nav-link ${
         active
-          ? "text-accent"
+          ? "text-accent dark:text-accent-dark"
           : "text-muted-foreground dark:text-muted-foreground-dark"
       }`}
     >
@@ -47,7 +47,7 @@ export default function MobileTabBar() {
     pathname === `/channel/${user.id}`;
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-stretch justify-around border-t border-border bg-card pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_8px_-2px_rgba(0,0,0,0.08)] md:hidden dark:border-border-dark dark:bg-card-dark dark:shadow-[0_-2px_8px_-2px_rgba(0,0,0,0.3)]">
+    <nav className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-stretch justify-around border-t border-border bg-card pb-[env(safe-area-inset-bottom)] md:hidden dark:border-border-dark dark:bg-card-dark">
       <TabLink to="/" label="Browse" icon={<House size={22} weight={pathname === "/" ? "fill" : "regular"} />} active={pathname === "/"} />
       <TabLink
         to="/my-videos"
@@ -56,7 +56,7 @@ export default function MobileTabBar() {
         active={pathname.startsWith("/my-videos")}
       />
       <Link to="/upload" aria-label="Upload video" className="flex flex-1 flex-col items-center justify-center">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent p-2 text-on-accent shadow-[0_2px_8px_-1px_rgba(0,0,0,0.35)]">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full border-[1.5px] border-foreground bg-accent p-2 text-on-accent shadow-ink-sm dark:border-black dark:bg-accent-dark dark:text-on-accent-dark dark:shadow-ink-sm-dark">
           <Plus size={22} weight="bold" />
         </span>
       </Link>
@@ -70,7 +70,7 @@ export default function MobileTabBar() {
         type="button"
         onClick={(e) => setAnchorEl(e.currentTarget)}
         className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-nav-link ${
-          youActive ? "text-accent" : "text-muted-foreground dark:text-muted-foreground-dark"
+          youActive ? "text-accent dark:text-accent-dark" : "text-muted-foreground dark:text-muted-foreground-dark"
         }`}
       >
         <Avatar src={user.profileImage || undefined} sx={{ width: 22, height: 22 }}>

@@ -1,4 +1,4 @@
-// MiniTube — full database schema (DBML)
+// Dipak Studio — full database schema (DBML)
 // Paste this into https://dbdiagram.io to render/edit visually.
 //
 // This is the single shared MySQL database every microservice still connects
@@ -12,7 +12,7 @@
 
 Project minitube {
   database_type: 'MySQL'
-  note: 'MiniTube — a MERN-stack YouTube clone, backend split into microservices sharing one MySQL instance.'
+  note: 'Dipak Studio, a MERN-stack video sharing platform. Backend split into microservices sharing one MySQL instance.'
 }
 
 //

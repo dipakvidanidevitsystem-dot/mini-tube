@@ -36,7 +36,7 @@ export default function Login() {
 
   return (
     <div className="mx-auto mt-16 max-w-sm">
-      <h1 className="mb-6 text-2xl font-semibold">Log in</h1>
+      <h1 className="font-display mb-6 text-2xl font-semibold">Log in</h1>
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <TextField
           label="Email"

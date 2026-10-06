@@ -15,3 +15,8 @@ important_reasoning.txt
 
 # graphify tool output
 graphify-out/
+
+
+.vscode/
+
+.agents/

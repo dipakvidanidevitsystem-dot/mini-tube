@@ -109,7 +109,7 @@ class VideoController {
     try {
       const videoId = Number(req.params.id);
       await this.videoService.report(videoId, req.user!.id, req.body.reason);
-      res.status(201).json({ message: "Report submitted. Thank you for helping keep MiniTube safe." });
+      res.status(201).json({ message: "Report submitted. Thank you for helping keep Dipak Studio safe." });
     } catch (err) {
       next(err);
     }

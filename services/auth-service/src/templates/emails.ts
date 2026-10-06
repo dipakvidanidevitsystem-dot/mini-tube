@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 
-const BRAND_COLOR = "#dc2626";
+const BRAND_COLOR = "#8A5A2B";
 const TEXT_COLOR = "#1a1a1a";
 const MUTED_COLOR = "#52525b";
 const BORDER_COLOR = "#e4e4e7";
@@ -50,7 +50,7 @@ function layout({ preheader, heading, bodyHtml, ctaLabel, ctaUrl }: LayoutOption
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>${heading} · MiniTube</title>
+    <title>${heading} · Dipak Studio</title>
   </head>
   <body style="margin: 0; padding: 0; background-color: ${PAGE_BG};">
     <span style="display: none; visibility: hidden; opacity: 0; overflow: hidden; height: 0; width: 0; max-height: 0; max-width: 0; mso-hide: all;">
@@ -70,7 +70,7 @@ function layout({ preheader, heading, bodyHtml, ctaLabel, ctaUrl }: LayoutOption
           >
             <tr>
               <td style="padding: 28px 40px 12px;">
-                <span style="font-size: 20px; font-weight: 800; color: ${BRAND_COLOR}; letter-spacing: -0.02em;">MiniTube</span>
+                <span style="font-family: Georgia, 'Times New Roman', serif; font-size: 22px; font-weight: 700; font-style: italic; color: ${BRAND_COLOR}; letter-spacing: -0.01em;">Dipak Studio</span>
               </td>
             </tr>
             <tr>
@@ -97,11 +97,11 @@ function layout({ preheader, heading, bodyHtml, ctaLabel, ctaUrl }: LayoutOption
               <td
                 style="padding: 16px 40px 28px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; line-height: 1.6; color: ${MUTED_COLOR};"
               >
-                You're receiving this email because of activity on your MiniTube account.
+                You're receiving this email because of activity on your Dipak Studio account.
                 <a href="${process.env.CLIENT_URL}/settings" style="color: ${MUTED_COLOR}; text-decoration: underline;">Manage email preferences</a>
                 to control which notifications you get.
                 <br />
-                © ${dayjs().year()} MiniTube. All rights reserved.
+                © ${dayjs().year()} Dipak Studio. All rights reserved.
               </td>
             </tr>
           </table>
@@ -114,15 +114,15 @@ function layout({ preheader, heading, bodyHtml, ctaLabel, ctaUrl }: LayoutOption
 
 export function welcomeEmail(name: string) {
   return {
-    subject: "Welcome to MiniTube!",
+    subject: "Welcome to Dipak Studio!",
     html: layout({
-      preheader: `${name}, your MiniTube account is ready — come find something worth watching.`,
+      preheader: `${name}, your Dipak Studio account is ready — come find something worth watching.`,
       heading: `Welcome aboard, ${name} 👋`,
       bodyHtml: `
-        <p style="margin: 0 0 16px;">Thanks for joining MiniTube! Your account is all set up and ready to go.</p>
-        <p style="margin: 0;">Browse trending videos, subscribe to creators you like, or upload your own content to start building an audience.</p>
+        <p style="margin: 0 0 16px;">Thanks for joining Dipak Studio! Your account is all set up and ready to go.</p>
+        <p style="margin: 0;">Browse trending videos, follow creators you like, or upload your own content to start building an audience.</p>
       `,
-      ctaLabel: "Start exploring MiniTube",
+      ctaLabel: "Start exploring Dipak Studio",
       ctaUrl: process.env.CLIENT_URL,
     }),
   };
@@ -130,12 +130,12 @@ export function welcomeEmail(name: string) {
 
 export function forgotPasswordEmail(name: string, resetUrl: string) {
   return {
-    subject: "Reset your MiniTube password",
+    subject: "Reset your Dipak Studio password",
     html: layout({
       preheader: "This password reset link expires in 1 hour.",
       heading: "Reset your password",
       bodyHtml: `
-        <p style="margin: 0 0 16px;">Hi ${name}, we received a request to reset the password for your MiniTube account.</p>
+        <p style="margin: 0 0 16px;">Hi ${name}, we received a request to reset the password for your Dipak Studio account.</p>
         <p style="margin: 0 0 16px;">Click the button below to choose a new password. For your security, this link expires in <strong>1 hour</strong>.</p>
         <p style="margin: 0;">If you didn't request a password reset, you can safely ignore this email — your password won't be changed.</p>
       `,
@@ -147,12 +147,12 @@ export function forgotPasswordEmail(name: string, resetUrl: string) {
 
 export function passwordChangedEmail(name: string) {
   return {
-    subject: "Your MiniTube password was changed",
+    subject: "Your Dipak Studio password was changed",
     html: layout({
       preheader: "Your password was just changed. Wasn't you? Secure your account now.",
       heading: "Your password was changed",
       bodyHtml: `
-        <p style="margin: 0 0 16px;">Hi ${name}, this is a confirmation that the password for your MiniTube account was just changed.</p>
+        <p style="margin: 0 0 16px;">Hi ${name}, this is a confirmation that the password for your Dipak Studio account was just changed.</p>
         <p style="margin: 0;"><strong>If this wasn't you</strong>, your account may be at risk — reset your password immediately and review your recent activity.</p>
       `,
       ctaLabel: "Secure your account",
@@ -163,12 +163,12 @@ export function passwordChangedEmail(name: string) {
 
 export function loginAlertEmail(name: string) {
   return {
-    subject: "New login to your MiniTube account",
+    subject: "New login to your Dipak Studio account",
     html: layout({
-      preheader: "We noticed a new login to your MiniTube account.",
+      preheader: "We noticed a new login to your Dipak Studio account.",
       heading: "New login detected",
       bodyHtml: `
-        <p style="margin: 0 0 16px;">Hi ${name}, we noticed a new sign-in to your MiniTube account.</p>
+        <p style="margin: 0 0 16px;">Hi ${name}, we noticed a new sign-in to your Dipak Studio account.</p>
         <p style="margin: 0;">If this was you, no action is needed. If you don't recognize this activity, secure your account by resetting your password right away.</p>
       `,
       ctaLabel: "Secure your account",

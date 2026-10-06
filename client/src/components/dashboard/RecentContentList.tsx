@@ -24,7 +24,7 @@ export default function RecentContentList() {
   const visibleRows = rows?.slice(0, 5);
 
   return (
-    <Card variant="outlined">
+    <Card variant="outlined" className="!rounded-lg !border-[1.5px] !border-border dark:!border-border-dark">
       <CardContent>
         <div className="mb-2 flex items-center justify-between">
           <Typography variant="body2" fontWeight={600}>
@@ -85,7 +85,7 @@ export default function RecentContentList() {
                 </span>
               </Link>
             ))}
-            <Link to="/my-videos" className="mt-2 block text-right text-sm text-accent">
+            <Link to="/my-videos" className="mt-2 block text-right text-sm text-accent dark:text-accent-dark">
               View all →
             </Link>
           </div>

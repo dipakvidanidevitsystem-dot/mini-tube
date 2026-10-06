@@ -28,8 +28,8 @@ function FilterChip({
       onClick={onClick}
       className={`shrink-0 rounded-full border px-sm py-xxs text-button-utility transition-colors ${
         active
-          ? "border-accent bg-accent text-on-accent"
-          : "border-border text-foreground hover:border-accent/60 dark:border-border-dark dark:text-foreground-dark dark:hover:border-accent/60"
+          ? "border-accent dark:border-accent-dark bg-accent dark:bg-accent-dark text-on-accent dark:text-on-accent-dark"
+          : "border-border text-foreground hover:border-accent/60 dark:hover:border-accent-dark/60 dark:border-border-dark dark:text-foreground-dark"
       }`}
     >
       {label}
@@ -110,14 +110,14 @@ export default function Home() {
   return (
     <div className="p-md sm:p-lg pb-16">
       {query ? (
-        <h1 className="mb-lg text-body-strong text-foreground dark:text-foreground-dark">
+        <h1 className="font-display mb-lg text-body-strong text-foreground dark:text-foreground-dark">
           Search results for &quot;{query}&quot;
         </h1>
       ) : (
         <div className="mb-md">
-          <h1 className="text-display-md text-foreground dark:text-foreground-dark">Browse</h1>
+          <h1 className="font-display text-display-md text-foreground dark:text-foreground-dark">Browse</h1>
           <p className="text-caption text-muted-foreground dark:text-muted-foreground-dark">
-            Explore videos across MiniTube.
+            Explore videos across Dipak Studio.
           </p>
         </div>
       )}

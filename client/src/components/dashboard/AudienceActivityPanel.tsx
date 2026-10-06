@@ -27,7 +27,7 @@ function ProportionRow({
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-border dark:bg-border-dark">
         <div
-          className={filled ? "h-full rounded-full bg-accent" : "h-full rounded-full bg-border dark:bg-muted-foreground-dark"}
+          className={filled ? "h-full rounded-full bg-accent dark:bg-accent-dark" : "h-full rounded-full bg-border dark:bg-muted-foreground-dark"}
           style={{ width: `${percent}%` }}
         />
       </div>
@@ -43,7 +43,7 @@ export default function AudienceActivityPanel() {
   const newPercent = total > 0 ? ((data?.newViewers ?? 0) / total) * 100 : 0;
 
   return (
-    <Card variant="outlined">
+    <Card variant="outlined" className="!rounded-lg !border-[1.5px] !border-border dark:!border-border-dark">
       <CardContent>
         <Typography variant="body2" fontWeight={600} className="mb-3">
           Audience Activity

@@ -13,7 +13,7 @@ import EmptyState from "../EmptyState";
 function describeActivity(item: ActivityItem): string {
   switch (item.type) {
     case "subscribe":
-      return `${item.actorName} subscribed to your channel`;
+      return `${item.actorName} followed your channel`;
     case "comment":
       return `${item.actorName} commented on ${item.videoTitle}`;
     case "like":
@@ -38,7 +38,7 @@ export default function RecentActivityPanel() {
   const visibleActivity = activity?.slice(0, 5);
 
   return (
-    <Card variant="outlined">
+    <Card variant="outlined" className="!rounded-lg !border-[1.5px] !border-border dark:!border-border-dark">
       <CardContent>
         <Typography variant="body2" fontWeight={600} className="mb-2">
           Recent Activity

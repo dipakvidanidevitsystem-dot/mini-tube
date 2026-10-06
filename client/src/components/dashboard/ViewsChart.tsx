@@ -27,7 +27,7 @@ export default function ViewsChart() {
   const periodLabel = PERIOD_OPTIONS.find((opt) => opt.value === period)?.label.toLowerCase() ?? "yet";
 
   return (
-    <Card variant="outlined" id="views-analytics">
+    <Card variant="outlined" className="!rounded-lg !border-[1.5px] !border-border dark:!border-border-dark" id="views-analytics">
       <CardContent>
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <Typography variant="body2" fontWeight={600}>
@@ -43,7 +43,7 @@ export default function ViewsChart() {
 
         {stats && (
           <div className="mb-4 flex flex-wrap gap-x-5 gap-y-1 text-caption text-muted-foreground dark:text-muted-foreground-dark">
-            <span>{stats.subscriberCount.toLocaleString()} subscribers</span>
+            <span>{stats.subscriberCount.toLocaleString()} followers</span>
             <span>+{stats.subscribersGainedThisMonth.toLocaleString()} this month</span>
             <span>{stats.watchTimeHours.toFixed(1)} hrs watch time</span>
           </div>

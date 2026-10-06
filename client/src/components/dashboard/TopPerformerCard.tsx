@@ -58,7 +58,7 @@ export default function TopPerformerCard() {
 
   if (loading) {
     return (
-      <Card variant="outlined">
+      <Card variant="outlined" className="!rounded-lg !border-[1.5px] !border-border dark:!border-border-dark">
         <CardContent>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <Skeleton variant="rounded" className="aspect-video w-full sm:w-48" />
@@ -76,7 +76,7 @@ export default function TopPerformerCard() {
 
   if (hasError) {
     return (
-      <Card variant="outlined">
+      <Card variant="outlined" className="!rounded-lg !border-[1.5px] !border-border dark:!border-border-dark">
         <CardContent>
           <ErrorState message="Couldn't load your top performer." onRetry={refetch} />
         </CardContent>
@@ -86,10 +86,10 @@ export default function TopPerformerCard() {
 
   if (!video) {
     return (
-      <Card variant="outlined">
+      <Card variant="outlined" className="!rounded-lg !border-[1.5px] !border-border dark:!border-border-dark">
         <CardContent>
           <div className="mb-4 flex items-center justify-between gap-2">
-            <span className="min-w-0 truncate text-sm font-semibold text-accent">{selected.eyebrow}</span>
+            <span className="min-w-0 truncate text-sm font-semibold text-accent dark:text-accent-dark">{selected.eyebrow}</span>
             <span className="shrink-0">{periodMenu}</span>
           </div>
           <EmptyState message="No video performance yet for this period." />
@@ -99,7 +99,7 @@ export default function TopPerformerCard() {
   }
 
   return (
-    <Card variant="outlined">
+    <Card variant="outlined" className="!rounded-lg !border-[1.5px] !border-border dark:!border-border-dark">
       <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="relative w-full shrink-0 sm:w-48">
           <img
@@ -107,18 +107,18 @@ export default function TopPerformerCard() {
             alt=""
             className="aspect-video w-full rounded-sm object-cover"
           />
-          <span className="absolute left-2 top-2 rounded-sm bg-accent px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-on-accent">
+          <span className="absolute left-2 top-2 rounded-sm bg-accent dark:bg-accent-dark px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-on-accent dark:text-on-accent-dark">
             Top Performer
           </span>
           <span className="absolute inset-0 flex items-center justify-center">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/80">
-              <Play className="text-primary" weight="fill" />
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-card/80 dark:bg-card-dark/80">
+              <Play className="text-primary dark:text-primary-dark" weight="fill" />
             </span>
           </span>
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="flex items-center justify-between gap-2">
-            <span className="min-w-0 truncate text-sm font-semibold text-accent">{selected.eyebrow}</span>
+            <span className="min-w-0 truncate text-sm font-semibold text-accent dark:text-accent-dark">{selected.eyebrow}</span>
             <span className="shrink-0">{periodMenu}</span>
           </div>
           <OverflowTooltip

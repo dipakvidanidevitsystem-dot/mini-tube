@@ -20,9 +20,9 @@ export default function KpiCard({
   const value = stats?.[def.key];
 
   return (
-    <Card variant="outlined" className="snap-start">
+    <Card variant="outlined" className="!rounded-lg !border-[1.5px] !border-border dark:!border-border-dark snap-start">
       <CardContent className="flex items-center gap-sm sm:gap-md">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/10 dark:bg-accent-dark/10 text-accent dark:text-accent-dark">
           <Icon size={20} weight="bold" />
         </span>
         <div className="min-w-0">

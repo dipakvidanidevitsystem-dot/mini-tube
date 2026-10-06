@@ -1,0 +1,179 @@
+day:1
+- Reviewed existing monolith codebase to understand current structure and pain points
+- Identified logical boundaries for splitting into microservices (auth, video, user, comment, history, notification)
+- Researched monorepo tooling options (npm workspaces vs turborepo vs nx)
+- Decided on npm workspaces for simplicity and team familiarity
+- Set up base repo structure, root package.json, and .gitignore
+- Configured base TypeScript config (tsconfig.base.json) for shared compiler options
+- Set up ESLint and Prettier config at the root for consistent code style
+- Initialized git repo and verified remote setup
+- Made first commit with baseline structure
+- Documented initial architecture notes for reference
+
+day:2
+- Planned folder layout for client, server, gateway, services, and shared packages
+- Drafted naming conventions for services and shared packages
+- Converted single-app structure into a monorepo layout
+- Set up npm workspaces in root package.json (client, server, gateway, services/*, shared/*)
+- Set up shared root scripts (build/dev/lint/typecheck) to run across workspaces
+- Organized existing client code under client/ workspace
+- Organized existing server code under server/ workspace
+- Fixed broken import paths caused by the folder restructuring
+- Verified client and server still built and ran correctly after the move
+- Committed monorepo restructuring changes
+
+day:3
+- Scaffolded microservices monorepo skeleton (gateway, services, shared)
+- Created placeholder app entry points for each planned microservice
+- Set up shared tsconfig base and per-service tsconfig extensions
+- Standardized package.json structure (scripts, deps, versions) across services
+- Set up shared linting/formatting config to keep services consistent
+- Added .env.example templates per service for local setup
+- Set up basic health-check endpoint pattern to reuse across services
+- Wired up local dev scripts to run all services concurrently
+- Verified each scaffolded service boots without errors
+- Documented the intended service boundaries and responsibilities
+-------
+day:4
+- Designed auth-service database schema (users, credentials, sessions)
+- Reviewed password security requirements (hashing, salting strategy)
+- Scaffolded auth-service app structure (app.ts, routes, controllers, services folders)
+- Set up DB connection module and ORM/query setup for auth-service
+- Wrote initial DB migration for users table
+- Implemented JWT utility functions (sign, verify, decode helpers)
+- Set up environment config and .env.example for auth-service
+- Configured auth-service package.json scripts and dependencies
+- Ran local migrations and verified schema against DB
+- Smoke-tested app boot and DB connectivity
+
+day:5
+- Implemented register controller with input validation
+- Added password hashing (bcrypt) to registration flow
+- Implemented login controller with credential verification
+- Implemented auth.service.ts business logic connecting controllers to DB
+- Wired up auth routes and mounted them in app.ts
+- Added auth middleware for protected route verification
+- Handled validation error responses and standardized error format
+- Manually tested register flow via Postman
+- Manually tested login flow and verified JWT issuance
+- Fixed edge cases around duplicate email/username registration
+
+day:6
+- Designed video-service schema (videos, likes, reports)
+- Scaffolded video-service app structure and controllers
+- Implemented video CRUD endpoints (create, read, update, delete)
+- Implemented video search endpoint with query filtering
+- Implemented pagination and sorting for video listing
+- Implemented likes endpoint and like-count aggregation logic
+- Implemented reports endpoint for flagging inappropriate content
+- Added ownership/permission checks on update and delete
+- Tested each endpoint manually via Postman
+- Fixed validation edge cases found during testing
+
+day:7
+- Implemented watch-progress tracking endpoint and schema fields
+- Implemented view-milestone tracking logic (25/50/75/100% thresholds)
+- Researched ffmpeg configuration for video transcoding
+- Integrated ffmpeg for video transcoding on upload
+- Integrated Cloudinary SDK for storage/CDN delivery of processed videos
+- Built transcoding pipeline job flow (upload -> process -> store -> update record)
+- Added error handling for failed transcoding jobs
+- Debugged ffmpeg pipeline errors on certain video formats
+- Validated output video quality/formats after transcoding
+- Tested full upload-to-playback flow end-to-end
+
+day:8
+- Designed comment-service schema (comments, replies, references to video/user)
+- Scaffolded comment-service app structure and package.json
+- Implemented create-comment controller with validation
+- Implemented edit/delete comment controllers with ownership checks
+- Implemented list-comments-by-video endpoint with pagination
+- Implemented nested reply support for comments
+- Added basic profanity/spam validation on comment content
+- Tested comment flows against video-service integration
+- Tested comment flows against auth-service token verification
+- Fixed bugs found in reply-threading logic
+
+day:9
+- Designed history/saved-service schema (watch history, saved videos)
+- Scaffolded service app structure, routes, and controllers
+- Implemented "add to watch history" endpoint triggered from video views
+- Implemented de-duplication logic for repeated watch-history entries
+- Implemented saved/bookmarked videos CRUD endpoints
+- Implemented pagination for history and saved-video listings
+- Added indexes/queries to keep history lookups performant
+- Tested cross-service calls between history-service and video-service
+- Tested cross-service calls between history-service and user-service
+- Fixed data consistency issues found during integration testing
+
+day:10
+- Designed user-service schema (profiles, preferences, channel info)
+- Scaffolded user-service app structure and package config
+- Implemented get-profile and update-profile controllers
+- Implemented avatar/bio update handling
+- Implemented channel-related endpoints (subscriber count, channel info)
+- Implemented subscribe/unsubscribe endpoints
+- Added validation for profile update fields
+- Tested user-service endpoints in isolation via Postman
+- Tested user-service endpoints via gateway routing
+- Fixed bugs in subscriber-count aggregation
+
+day:11
+- Designed API gateway routing structure for all microservices
+- Implemented gateway server entry point (server.ts) with Express setup
+- Configured proxy/routing rules to auth-service
+- Configured proxy/routing rules to video, comment, history, and user services
+- Added centralized error handling at the gateway layer
+- Added centralized request logging/middleware at the gateway
+- Configured CORS policy for client requests
+- Added base security headers at the gateway
+- Tested end-to-end requests routed through gateway to each downstream service
+- Fixed routing bugs and misconfigured proxy paths
+
+day:12
+- Reviewed existing Socket.IO integration embedded in the monolith
+- Identified real-time features to migrate (notifications, live updates)
+- Designed dedicated notification-service to own real-time/socket concerns
+- Scaffolded notification-service app and server entry point
+- Migrated Socket.IO server setup into notification-service
+- Refactored socket.service.ts to handle connection and auth
+- Implemented event emitting/broadcasting logic in notification-service
+- Updated client-side socket.ts to connect to the new notification-service endpoint
+- Tested real-time notification delivery end-to-end after migration
+- Fixed reconnection and auth-token issues in the socket handshake
+
+day:13
+- Mapped out full system architecture across gateway, services, and client
+- Gathered notes on actual implemented routes and data flows per service
+- Created client-server communication flow diagram
+- Created interservice communication flow diagram
+- Created master flow diagram tying all services together
+- Documented services-overview with responsibilities per service
+- Documented request/response flow for key user journeys (upload, watch, comment)
+- Reviewed diagrams for accuracy against actual implemented routes/flows
+- Fixed inconsistencies found between docs and implementation
+- Shared diagrams for internal reference/documentation
+
+day:14
+- Reviewed auth flow and identified refresh-token support gaps
+- Researched refresh-token rotation and revocation best practices
+- Updated database ERD and dbml schema to include refresh tokens
+- Extended auth-service DB schema with refresh token table/fields
+- Wrote migration for new refresh-token table
+- Implemented refreshToken.repository.ts for token persistence and lookup
+- Updated auth.service.ts to issue and rotate refresh tokens
+- Updated auth.controller.ts and auth.routes.ts to expose refresh endpoint
+- Updated jwt.ts utility to support refresh token signing/verification
+- Manually tested refresh-token issuance, rotation, and expiry flow
+
+day:15
+- Reviewed cross-service security gaps (rate limiting, headers, sanitization)
+- Designed shared security-middleware package to centralize these concerns
+- Scaffolded shared/security-middleware with its own package.json and tsconfig
+- Implemented core security-middleware logic in src/index.ts (rate limiting, headers)
+- Integrated security-middleware into gateway app.ts
+- Integrated security-middleware into server and remaining services' app.ts
+- Updated shared auth-middleware to align with new security-middleware
+- Updated client-side authApi/baseApi to handle new auth headers and token refresh
+- Updated uploadWithProgress.ts and nav components for related client-side fixes
+- Reviewed and cleaned up package dependencies across all services before wrap-up

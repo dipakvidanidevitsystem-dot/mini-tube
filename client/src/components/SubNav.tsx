@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom";
 
 const TITLES: { prefix: string; label: string }[] = [
   { prefix: "/history", label: "History" },
-  { prefix: "/watch-later", label: "Watch Later" },
+  { prefix: "/watch-later", label: "Saved" },
   { prefix: "/settings", label: "Settings" },
   { prefix: "/admin", label: "Admin" },
   { prefix: "/upload", label: "Upload" },

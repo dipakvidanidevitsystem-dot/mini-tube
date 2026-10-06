@@ -12,41 +12,42 @@ export function ThemeModeProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute("data-theme", mode);
   }, [mode]);
 
-  const theme = useMemo(
-    () =>
-      createTheme({
+  const theme = useMemo(() => {
+    const isDark = mode === "dark";
+    const displayFont = ["Newsreader", "Georgia", "serif"].join(",");
+    return createTheme({
         palette: {
           mode,
           primary: {
-            main: "#E11D48",
-            contrastText: "#FFFFFF",
+            main: isDark ? "#D9B98A" : "#8A5A2B",
+            contrastText: isDark ? "#1A1A1A" : "#FFFFFF",
           },
           secondary: {
-            main: mode === "dark" ? "#1E1B4B" : "#EEF2FF",
-            contrastText: mode === "dark" ? "#FFFFFF" : "#1E1B4B",
+            main: isDark ? "#332E26" : "#EFE8DA",
+            contrastText: isDark ? "#F2EDE3" : "#2E2A24",
           },
           error: {
-            main: mode === "dark" ? "#EF4444" : "#DC2626",
-            contrastText: mode === "dark" ? "#000000" : "#FFFFFF",
+            main: isDark ? "#F97066" : "#B42318",
+            contrastText: isDark ? "#1A1A1A" : "#FFFFFF",
           },
           background: {
-            default: mode === "dark" ? "#000000" : "#FBF7F2",
-            paper: mode === "dark" ? "#0C0C0D" : "#FFFFFF",
+            default: isDark ? "#17150F" : "#FAFAF8",
+            paper: isDark ? "#211E18" : "#FFFEFA",
           },
           text: {
-            primary: mode === "dark" ? "#F8FAFC" : "#0F0F23",
-            secondary: mode === "dark" ? "#94A3B8" : "#6B6155",
+            primary: isDark ? "#F2EDE3" : "#1A1A1A",
+            secondary: isDark ? "#B8AF9F" : "#4A4A4A",
           },
-          divider: mode === "dark" ? "#312E81" : "#E2E8F0",
+          divider: isDark ? "#3E382E" : "#D6CEBE",
         },
-        shape: { borderRadius: 10 },
+        shape: { borderRadius: 12 },
         typography: {
-          fontFamily: ["Inter", "system-ui", "-apple-system", "BlinkMacSystemFont", "sans-serif"].join(","),
-          h1: { fontSize: "56px", fontWeight: 600, lineHeight: 1.07, letterSpacing: "-0.28px" },
-          h2: { fontSize: "40px", fontWeight: 600, lineHeight: 1.1, letterSpacing: "0" },
-          h3: { fontSize: "34px", fontWeight: 600, lineHeight: 1.47, letterSpacing: "-0.374px" },
-          h4: { fontSize: "28px", fontWeight: 400, lineHeight: 1.14, letterSpacing: "0.196px" },
-          h5: { fontSize: "21px", fontWeight: 600, lineHeight: 1.19, letterSpacing: "0.231px" },
+          fontFamily: ["Cabin", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"].join(","),
+          h1: { fontFamily: displayFont, fontSize: "56px", fontWeight: 600, lineHeight: 1.07, letterSpacing: "-0.28px" },
+          h2: { fontFamily: displayFont, fontSize: "40px", fontWeight: 600, lineHeight: 1.1, letterSpacing: "0" },
+          h3: { fontFamily: displayFont, fontSize: "34px", fontWeight: 600, lineHeight: 1.47, letterSpacing: "-0.374px" },
+          h4: { fontFamily: displayFont, fontSize: "28px", fontWeight: 400, lineHeight: 1.14, letterSpacing: "0.196px" },
+          h5: { fontFamily: displayFont, fontSize: "21px", fontWeight: 600, lineHeight: 1.19, letterSpacing: "0.231px" },
           h6: { fontSize: "17px", fontWeight: 600, lineHeight: 1.24, letterSpacing: "-0.374px" },
           body1: { fontSize: "17px", fontWeight: 400, lineHeight: 1.47, letterSpacing: "-0.374px" },
           body2: { fontSize: "14px", fontWeight: 400, lineHeight: 1.43, letterSpacing: "-0.224px" },
@@ -68,12 +69,12 @@ export function ThemeModeProvider({ children }: { children: ReactNode }) {
           MuiButton: {
             styleOverrides: {
               root: {
-                borderRadius: 10,
+                borderRadius: 12,
                 textTransform: "none",
                 fontWeight: 500,
                 "&:active": { transform: "scale(0.95)" },
                 "&:focus-visible": {
-                  outline: `2px solid ${mode === "dark" ? "#FFFFFF" : "#0F0F23"}`,
+                  outline: `2px solid ${isDark ? "#F2EDE3" : "#1A1A1A"}`,
                   outlineOffset: 2,
                 },
               },
@@ -106,7 +107,7 @@ export function ThemeModeProvider({ children }: { children: ReactNode }) {
           MuiCard: {
             styleOverrides: {
               root: ({ theme }) => ({
-                borderRadius: 14,
+                borderRadius: 18,
                 border: `1px solid ${theme.palette.divider}`,
                 boxShadow: "none",
               }),
@@ -153,7 +154,7 @@ export function ThemeModeProvider({ children }: { children: ReactNode }) {
           MuiMenu: {
             styleOverrides: {
               paper: ({ theme }) => ({
-                borderRadius: 10,
+                borderRadius: 12,
                 border: `1px solid ${theme.palette.divider}`,
                 boxShadow: "none",
               }),
@@ -163,9 +164,8 @@ export function ThemeModeProvider({ children }: { children: ReactNode }) {
             styleOverrides: { root: { fontSize: "14px" } },
           },
         },
-      }),
-    [mode]
-  );
+      });
+  }, [mode]);
 
   return (
     <ThemeProvider theme={theme}>

@@ -174,7 +174,7 @@ export default function MediaDropzone({
               type="button"
               onClick={openPicker}
               disabled={disabled}
-              className="rounded-md px-xs py-xxs text-button-utility text-accent hover:bg-muted disabled:opacity-50 dark:hover:bg-muted-dark"
+              className="rounded-md px-xs py-xxs text-button-utility text-accent dark:text-accent-dark hover:bg-muted disabled:opacity-50 dark:hover:bg-muted-dark"
             >
               Change
             </button>
@@ -210,15 +210,15 @@ export default function MediaDropzone({
             size === "lg" ? "min-h-[280px] p-xl" : "p-lg"
           } ${disabled ? "cursor-not-allowed opacity-50" : ""} ${
             isDragging
-              ? "border-accent bg-accent/5 shadow-glow-accent"
-              : "border-border bg-muted/40 hover:border-accent/60 hover:bg-muted dark:border-border-dark dark:bg-muted-dark/40 dark:hover:bg-muted-dark"
+              ? "border-accent dark:border-accent-dark bg-accent/5 dark:bg-accent-dark/5 shadow-ink-sm dark:shadow-ink-sm-dark"
+              : "border-border bg-muted/40 hover:border-accent/60 dark:hover:border-accent-dark/60 hover:bg-muted dark:border-border-dark dark:bg-muted-dark/40 dark:hover:bg-muted-dark"
           } ${error ? "border-destructive dark:border-destructive-dark" : ""}`}
         >
           <div className={`text-muted-foreground dark:text-muted-foreground-dark ${size === "lg" ? "scale-150" : ""}`}>
             {kind === "video" ? <VideoIcon /> : <ImageIcon />}
           </div>
           <p className={size === "lg" ? "text-body-strong text-foreground dark:text-foreground-dark" : "text-caption-strong text-foreground dark:text-foreground-dark"}>
-            <span className="text-accent">Click to upload</span> or drag and drop
+            <span className="text-accent dark:text-accent-dark">Click to upload</span> or drag and drop
           </p>
           {helperText && (
             <p className="text-fine-print text-muted-foreground dark:text-muted-foreground-dark">{helperText}</p>

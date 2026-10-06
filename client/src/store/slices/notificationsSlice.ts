@@ -30,7 +30,7 @@ const initialState: NotificationsState = { items: [], unreadCount: 0 };
 function buildMessage(payload: NotificationPayload): string {
   switch (payload.type) {
     case "subscribe":
-      return `${payload.actorName ?? "Someone"} subscribed to your channel`;
+      return `${payload.actorName ?? "Someone"} followed your channel`;
     case "comment":
       return `${payload.actorName ?? "Someone"} commented on "${payload.videoTitle ?? "your video"}"`;
     case "like":

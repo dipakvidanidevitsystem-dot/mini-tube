@@ -37,7 +37,7 @@ export default function History() {
   return (
     <div className="p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Watch History</h1>
+        <h1 className="font-display text-2xl font-semibold">Watch History</h1>
         {videos.length > 0 && (
           <Button size="small" color="error" onClick={handleClear}>
             Clear all

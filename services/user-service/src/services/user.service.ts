@@ -86,7 +86,7 @@ class UserService {
 
   async toggleSubscribe(channelId: number, subscriberId: number) {
     if (channelId === subscriberId) {
-      throw new HttpError(400, "You cannot subscribe to your own channel");
+      throw new HttpError(400, "You cannot follow your own channel");
     }
 
     const existing = await this.subscriptionRepository.find(subscriberId, channelId);

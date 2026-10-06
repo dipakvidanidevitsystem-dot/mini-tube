@@ -137,7 +137,7 @@ export default function MyVideos() {
       <div className="mb-lg flex flex-col gap-md">
         <div className="flex flex-wrap items-center justify-between gap-sm">
           <div className="flex items-baseline gap-sm">
-            <h1 className="text-display-md text-foreground dark:text-foreground-dark">My Videos</h1>
+            <h1 className="font-display text-display-md text-foreground dark:text-foreground-dark">My Videos</h1>
             <span className="text-caption text-muted-foreground dark:text-muted-foreground-dark">
               &middot; {videos.length} {videos.length === 1 ? "video" : "videos"}
             </span>

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { VideoCamera, ChartBar, FilmSlate } from "@phosphor-icons/react";
 
 const LINK_CLASS =
-  "inline-flex items-center gap-1.5 whitespace-nowrap text-caption-strong text-foreground transition-colors hover:text-accent dark:text-foreground-dark dark:hover:text-accent";
+  "inline-flex items-center gap-1.5 whitespace-nowrap text-caption-strong text-foreground transition-colors hover:text-accent dark:hover:text-accent-dark dark:text-foreground-dark";
 
 export default function QuickActionLinks() {
   const scrollToAnalytics = () => {
