@@ -15,26 +15,71 @@ services:
       timeout: 5s
       retries: 10
 
-  server:
+  gateway:
     build:
-      context: ./server
+      context: .
+      dockerfile: backend/gateway/Dockerfile
     restart: unless-stopped
-    depends_on:
-      mysql:
-        condition: service_healthy
     environment:
-      PORT: ${PORT}
+      PORT: 5000
       CLIENT_URL: ${CLIENT_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      AUTH_SERVICE_URL: http://auth-service:5011
+      USER_SERVICE_URL: http://user-service:5012
+      VIDEO_SERVICE_URL: http://video-service:5013
+      COMMENT_SERVICE_URL: http://comment-service:5014
+      HISTORY_SERVICE_URL: http://history-service:5015
+      ADMIN_SERVICE_URL: http://admin-service:5016
+    depends_on:
+      - auth-service
+      - user-service
+      - video-service
+      - comment-service
+      - history-service
+      - admin-service
+    ports:
+      - "5000:5000"
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: backend/services/auth-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5011
+      CLIENT_URL: ${CLIENT_URL}
+      JWT_SECRET: ${JWT_SECRET}
       DB_HOST: mysql
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_SECURE: ${EMAIL_SECURE}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_APP_PASSWORD: ${EMAIL_APP_PASSWORD}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "5011:5011"
+
+  user-service:
+    build:
+      context: .
+      dockerfile: backend/services/user-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5012
+      CLIENT_URL: ${CLIENT_URL}
       JWT_SECRET: ${JWT_SECRET}
-      NOTIFICATION_SERVICE_URL: http://notification-service:5017
-      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
-      VIDEO_SERVICE_URL: http://video-service:5013
-      COMMENT_SERVICE_URL: http://comment-service:5014
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
@@ -44,17 +89,148 @@ services:
       EMAIL_USER: ${EMAIL_USER}
       EMAIL_APP_PASSWORD: ${EMAIL_APP_PASSWORD}
       EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
+      NOTIFICATION_SERVICE_URL: http://notification-service:5017
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      notification-service:
+        condition: service_started
     ports:
-      - "${PORT}:${PORT}"
+      - "5012:5012"
 
-  client:
+  video-service:
     build:
-      context: ./client
+      context: .
+      dockerfile: backend/services/video-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5013
+      CLIENT_URL: ${CLIENT_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_SECURE: ${EMAIL_SECURE}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_APP_PASSWORD: ${EMAIL_APP_PASSWORD}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
+      NOTIFICATION_SERVICE_URL: http://notification-service:5017
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      notification-service:
+        condition: service_started
+    ports:
+      - "5013:5013"
+
+  comment-service:
+    build:
+      context: .
+      dockerfile: backend/services/comment-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5014
+      CLIENT_URL: ${CLIENT_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_SECURE: ${EMAIL_SECURE}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_APP_PASSWORD: ${EMAIL_APP_PASSWORD}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
+      NOTIFICATION_SERVICE_URL: http://notification-service:5017
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      notification-service:
+        condition: service_started
+    ports:
+      - "5014:5014"
+
+  history-service:
+    build:
+      context: .
+      dockerfile: backend/services/history-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5015
+      CLIENT_URL: ${CLIENT_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "5015:5015"
+
+  admin-service:
+    build:
+      context: .
+      dockerfile: backend/services/admin-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5016
+      CLIENT_URL: ${CLIENT_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      VIDEO_SERVICE_URL: http://video-service:5013
+      COMMENT_SERVICE_URL: http://comment-service:5014
+    depends_on:
+      mysql:
+        condition: service_healthy
+      video-service:
+        condition: service_started
+      comment-service:
+        condition: service_started
+    ports:
+      - "5016:5016"
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: backend/services/notification-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5017
+      JWT_SECRET: ${JWT_SECRET}
+      CLIENT_URL: ${CLIENT_URL}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+    ports:
+      - "5017:5017"
+
+  frontend:
+    build:
+      context: ./frontend
       args:
         VITE_API_URL: ${VITE_API_URL}
+        VITE_WS_URL: ${VITE_WS_URL}
     restart: unless-stopped
     depends_on:
-      - server
+      - gateway
+      - notification-service
     ports:
       - "5173:80"
 

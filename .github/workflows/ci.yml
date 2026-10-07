@@ -7,12 +7,12 @@ on:
     branches: [main, master]
 
 jobs:
-  client:
-    name: Client (lint, typecheck, build)
+  frontend:
+    name: Frontend (lint, typecheck, build)
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: client
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
 
@@ -20,18 +20,15 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: client/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
 
       - run: npm ci
       - run: npm run lint
       - run: npm run build
 
-  server:
-    name: Server (typecheck, build)
+  backend:
+    name: Backend (typecheck, build)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: server
     steps:
       - uses: actions/checkout@v4
 
@@ -39,7 +36,6 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: server/package-lock.json
 
       - run: npm ci
       - run: npm run build

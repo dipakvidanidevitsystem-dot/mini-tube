@@ -41,8 +41,10 @@ graph TB
     end
 
     subgraph Admin["admin-service :5016"]
-        AdminRoutes["/api/admin/*<br/>(except migrations)"]
+        AdminRoutes["/api/admin/*<br/>(users, videos, comments, reports, migrations)"]
         AdminForward["forwards video/comment<br/>deletes to their owners"]
+        AdminMigrations["executes and tracks<br/>database schema migrations"]
+        AdminDB[("users (moderation),<br/>reports, migrations")]
     end
 
     subgraph Notification["notification-service :5017"]
@@ -50,18 +52,12 @@ graph TB
         NoDB["no database"]
     end
 
-    subgraph Monolith["monolith / server :5001"]
-        MigrationRoutes["/api/admin/migrations/*<br/>(only remaining route)"]
-        SchemaOwner["schema source of truth<br/>for the shared DB"]
-    end
-
     Gateway -->|"/api/auth"| Auth
     Gateway -->|"/api/videos<br/>(general)"| Video
     Gateway -->|"/api/videos/:id/comments<br/>/api/comments"| Comment
     Gateway -->|"/api/history<br/>/api/saved"| History
     Gateway -->|"/api/users"| User
-    Gateway -->|"/api/admin<br/>(general)"| Admin
-    Gateway -->|"/api/admin/migrations"| Monolith
+    Gateway -->|"/api/admin"| Admin
     Client -.->|"Socket.IO<br/>(direct, not via gateway)"| Notification
 
     MySQL[("Shared MySQL instance")]
@@ -70,5 +66,5 @@ graph TB
     CommentDB --- MySQL
     HistoryDB --- MySQL
     UserDB --- MySQL
-    SchemaOwner --- MySQL
+    AdminDB --- MySQL
 ```

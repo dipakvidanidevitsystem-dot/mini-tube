@@ -1,0 +1,1 @@
+ALTER TABLE `minitube_videos` ADD `duration` int DEFAULT 0 NOT NULL;

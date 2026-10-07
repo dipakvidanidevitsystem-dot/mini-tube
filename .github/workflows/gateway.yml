@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'gateway/**'
-      - 'shared/**'
+      - 'backend/gateway/**'
+      - 'backend/shared/**'
       - 'package.json'
       - 'package-lock.json'
 
@@ -21,10 +21,10 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - run: npm run build --workspace=gateway
+      - run: npm run build --workspace=@mini-tube/gateway
 
       - name: Build image
-        run: docker build -f gateway/Dockerfile -t mini-tube/gateway:${{ github.sha }} .
+        run: docker build -f backend/gateway/Dockerfile -t mini-tube/gateway:${{ github.sha }} .
 
       - name: Push image
         run: echo "push mini-tube/gateway:${{ github.sha }} to registry"

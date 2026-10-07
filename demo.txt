@@ -1,0 +1,16 @@
+points thats are special
+
+
+- confirm shaming
+- microservice
+- docker
+- rate limiter(normal and the auth special(less requests per window))
+- 
+
+
+
+r&d:
+
+docker
+socket
+microservice

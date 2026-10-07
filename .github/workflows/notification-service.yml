@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'services/notification-service/**'
-      - 'shared/**'
+      - 'backend/services/notification-service/**'
+      - 'backend/shared/**'
       - 'package.json'
       - 'package-lock.json'
 
@@ -21,13 +21,13 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - run: npm run build --workspace=services/notification-service
+      - run: npm run build --workspace=@mini-tube/notification-service
 
       - name: Build image
-        run: docker build -f services/notification-service/Dockerfile -t mini-tube/notification-service:${{ github.sha }} .
+        run: docker build -f backend/services/notification-service/Dockerfile -t mini-tube/notification-service:${{ github.sha }} .
 
       - name: Push image
         run: echo "push mini-tube/notification-service:${{ github.sha }} to registry"
 
       - name: Deploy
-        run: echo "deploy notification-service (e.g. docker compose pull && up, or kubectl set image)"
+        run: echo "deploy notification-service"

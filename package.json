@@ -3,11 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "gateway",
-    "server",
-    "shared/*",
-    "services/*"
+    "frontend",
+    "backend/gateway",
+    "backend/shared/*",
+    "backend/services/*"
   ],
+  "scripts": {
+    "build:shared": "npm run build --workspace=backend/shared/types --workspace=backend/shared/auth-middleware --workspace=backend/shared/security-middleware",
+    "build": "npm run build:shared && npm run build --workspaces --if-present",
+    "typecheck": "npm run build:shared && tsc -b frontend backend/gateway backend/services/* backend/shared/*"
+  },
   "engines": {
     "node": ">=22"
   },
